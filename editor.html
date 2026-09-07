@@ -100,6 +100,20 @@ footer#estado{display:flex;gap:16px;align-items:center;padding:5px 14px;border-t
 footer#estado b{color:var(--texto);font-weight:400}
 footer #toast{margin-left:auto;color:var(--acento)}
 @media (max-width:1000px){main{grid-template-columns:64px minmax(0,1fr) 300px}}
+/* móbil: ferramentas en fila arriba, lenzo no medio, paneis pregados abaixo */
+@media (max-width:760px){
+  body{height:100dvh}
+  main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto}
+  nav#ferramentas{flex-direction:row;border-right:0;border-bottom:1px solid var(--regra);overflow-x:auto;overflow-y:hidden;padding:4px 6px;gap:4px}
+  nav#ferramentas .fer{flex:none;min-width:52px}
+  nav#ferramentas hr{border-top:0;border-left:1px solid var(--regra);width:0;height:auto;margin:2px 4px;align-self:stretch}
+  aside#paneis{border-left:0;border-top:1px solid var(--regra);max-height:42vh}
+  #lenzo-int{padding:12px}
+  header{gap:8px;padding:6px 10px}
+  header h1{font-size:18px}
+  #nome{width:9em}
+  footer#estado{gap:8px}
+}
 </style>
 </head>
 <body>
@@ -1249,6 +1263,17 @@ renderBiblioteca();
 if (!restaurar()) { setTool('lapis'); syncGrella(); syncImaxe(); }
 commit(); axustarZoom();
 window.addEventListener('resize', () => render());
+</script>
+<script>
+(function(){
+  var m = window.matchMedia('(max-width:760px)');
+  function aplicar(){
+    if (!m.matches) return;
+    document.querySelectorAll('#paneis details[open]').forEach(function(d){ d.removeAttribute('open'); });
+    if (typeof axustarZoom === 'function') setTimeout(axustarZoom, 60);
+  }
+  if (document.readyState === 'complete') aplicar(); else window.addEventListener('load', aplicar);
+})();
 </script>
 </body>
 </html>
