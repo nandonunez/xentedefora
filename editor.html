@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="gl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor de píxel · Xente de Fóra</title>
+<style>
+:root{
+  --papel:#F5F3EC;--tinta:#1A1A1A;--magenta:#E4007C;
+  --fondo:#F5F3EC;--texto:#1A1A1A;--secundario:#6B6860;--regra:#DAD6CB;
+  --superficie:#ECE9DF;--superficie-2:#E3DFD3;--acento:#E4007C;--ui:#1E6FE8;
+  --mono:'Courier Prime','Courier New',Courier,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{--fondo:#1A1A1A;--texto:#F5F3EC;--secundario:#A8A49A;--regra:#3A3833;
+    --superficie:#242320;--superficie-2:#2E2C28;--ui:#7FB3FF;color-scheme:dark}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--fondo);color:var(--texto);font:13px/1.35 var(--sans);
+  display:grid;grid-template-rows:auto 1fr auto;height:100vh;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:var(--superficie);border:1px solid var(--regra);border-radius:4px;padding:4px 8px;cursor:pointer;line-height:1.2}
+button:hover{background:var(--superficie-2)}
+button:active{transform:translateY(1px)}
+button.primaria{background:var(--acento);border-color:var(--acento);color:#fff}
+button.primaria:hover{filter:brightness(1.08)}
+button.pequena{padding:2px 6px;font-size:12px}
+input[type=number],input[type=text],select{background:var(--fondo);border:1px solid var(--regra);border-radius:4px;padding:3px 5px;min-width:0}
+input[type=number]{width:4.6em}
+input[type=range]{accent-color:var(--acento);flex:1;min-width:80px}
+input[type=checkbox],input[type=radio]{accent-color:var(--acento)}
+label{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+textarea{width:100%;background:var(--fondo);border:1px solid var(--regra);border-radius:4px;padding:6px;font:12px/1.3 var(--mono);resize:vertical}
+kbd{font:11px var(--mono);background:var(--superficie-2);border:1px solid var(--regra);border-radius:3px;padding:0 4px;color:var(--secundario)}
+.mono{font-family:var(--mono)}
+.sec{color:var(--secundario)}
+.pequeno{font-size:11px}
+
+header{display:flex;align-items:center;gap:14px;padding:8px 14px;border-bottom:1px solid var(--regra);background:var(--fondo);flex-wrap:wrap}
+header h1{margin:0;font:400 24px/1 'Puntos',var(--mono);color:var(--acento);letter-spacing:0;text-transform:uppercase}
+header .sub{font-family:var(--mono);font-size:11px;color:var(--secundario);letter-spacing:.06em;text-transform:uppercase}
+header .accions{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#nome{width:14em;font-family:var(--mono)}
+
+main{display:grid;grid-template-columns:76px minmax(0,1fr) 352px;min-height:0}
+
+nav#ferramentas{border-right:1px solid var(--regra);background:var(--fondo);display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:6px 4px;overflow:auto}
+nav#ferramentas .fer{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px 4px;border:1px solid transparent;background:none;border-radius:6px}
+nav#ferramentas .fer span{font:10px var(--mono);letter-spacing:.02em;color:var(--secundario)}
+nav#ferramentas .fer svg{width:22px;height:22px;display:block}
+nav#ferramentas .fer:hover{background:var(--superficie)}
+nav#ferramentas .fer.activa{background:var(--acento);border-color:var(--acento);color:#fff}
+nav#ferramentas .fer.activa span{color:#fff}
+nav#ferramentas .fer.on{background:var(--superficie-2);border-color:var(--regra);color:var(--acento)}
+nav#ferramentas hr{border:0;border-top:1px solid var(--regra);margin:4px 6px;width:auto}
+
+#lenzo-wrap{overflow:auto;background:var(--superficie);position:relative;outline:none}
+#lenzo-int{min-width:100%;min-height:100%;width:max-content;display:flex;align-items:center;justify-content:center;padding:28px}
+#lenzo{display:block;image-rendering:pixelated;box-shadow:0 1px 4px rgba(0,0,0,.18);cursor:crosshair;touch-action:none}
+#lenzo.mover{cursor:move}
+#lenzo.sel{cursor:default}
+#lenzo.imaxe{cursor:grab}
+#lenzo.arrastrando{cursor:grabbing}
+#solta{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(228,0,124,.12);border:3px dashed var(--acento);font:16px var(--mono);color:var(--acento);pointer-events:none}
+#lenzo-wrap.solta #solta{display:flex}
+
+aside#paneis{border-left:1px solid var(--regra);background:var(--fondo);overflow:auto;min-height:0}
+details{border-bottom:1px solid var(--regra)}
+summary{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;cursor:pointer;background:var(--superficie);user-select:none;list-style:none;display:flex;align-items:center;gap:8px}
+summary::before{content:'';width:0;height:0;border:5px solid transparent;border-left:7px solid var(--secundario);transition:transform .12s}
+details[open] summary::before{transform:rotate(90deg) translateX(1px)}
+.corpo{padding:6px 12px 10px}
+.fila{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:3px 0;font-size:12px}
+.fila.bloque{display:block}
+.fila .etq{color:var(--secundario);min-width:5.2em;font-family:var(--mono);font-size:11px}
+.fila.cabeza{margin-top:6px;padding-top:6px;border-top:1px dashed var(--regra);color:var(--secundario);font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.cruz{display:grid;grid-template-columns:repeat(3,auto);gap:3px;justify-content:start;align-items:center}
+.cruz button{padding:2px 7px;font-family:var(--mono);font-size:12px}
+.cruz .c{display:grid;grid-template-columns:auto auto;gap:3px}
+.nota{font:11px/1.45 var(--mono);color:var(--secundario);border-left:3px solid var(--acento);padding:4px 8px;margin:6px 0;background:var(--superficie)}
+.aviso{color:var(--acento)}
+
+#bib-busca{width:100%}
+.bib-grupo summary{background:none;padding:6px 0;font-size:11px}
+.bib-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:4px;padding-bottom:6px}
+.bib-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;border:1px solid var(--regra);border-radius:4px;background:var(--superficie);cursor:pointer;min-width:0}
+.bib-item:hover{border-color:var(--acento)}
+.bib-item canvas{width:56px;height:56px;image-rendering:pixelated;background:var(--papel);border:1px solid var(--regra)}
+.bib-item span{font:10px var(--mono);color:var(--secundario);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.previas{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.previas figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.previas canvas{image-rendering:pixelated;border:1px solid var(--regra)}
+.previas figcaption{font:10px var(--mono);color:var(--secundario)}
+
+footer#estado{display:flex;gap:16px;align-items:center;padding:5px 14px;border-top:1px solid var(--regra);font:11px var(--mono);color:var(--secundario);background:var(--fondo);flex-wrap:wrap;min-height:28px}
+footer#estado b{color:var(--texto);font-weight:400}
+footer #toast{margin-left:auto;color:var(--acento)}
+@media (max-width:1000px){main{grid-template-columns:64px minmax(0,1fr) 300px}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Editor de píxel</h1>
+  <span class="sub">Xente de Fóra · cada cela é un punto · <a href="index.html" style="color:inherit">manual</a></span>
+  <label class="mono pequeno">nome <input id="nome" type="text" value="elemento" spellcheck="false"></label>
+  <div class="accions">
+    <button id="b-novo" title="Baleira o debuxo (desfacible)">Novo</button>
+    <button id="b-abrir" title="SVG, PNG/JPG (imaxe de fondo), JSON de proxecto ou texto de matriz">Abrir…</button>
+    <button id="b-gardar" title="Garda o proxecto: debuxo, grella e imaxe de fondo (Ctrl+S)">Gardar .json</button>
+    <button id="b-desfacer" title="Desfacer (Ctrl+Z)">↶</button>
+    <button id="b-refacer" title="Refacer (Ctrl+Y)">↷</button>
+  </div>
+</header>
+
+<main>
+  <nav id="ferramentas" aria-label="Ferramentas"></nav>
+
+  <section id="lenzo-wrap" tabindex="0">
+    <div id="lenzo-int"><canvas id="lenzo" width="10" height="10"></canvas></div>
+    <div id="solta">Solta o ficheiro: imaxe → fondo · SVG → debuxo</div>
+  </section>
+
+  <aside id="paneis">
+
+    <details open>
+      <summary>Grella</summary>
+      <div class="corpo">
+        <div class="fila">
+          <span class="etq">tamaño</span>
+          <input id="g-w" type="number" min="1" max="256"> ×
+          <input id="g-h" type="number" min="1" max="256">
+          <span class="sec pequeno">celas</span>
+        </div>
+        <div class="fila" id="presets">
+          <button class="pequena" data-wh="16,20">16×20 galiña</button>
+          <button class="pequena" data-wh="24,24">24×24</button>
+          <button class="pequena" data-wh="16,16">16×16</button>
+          <button class="pequena" data-wh="32,32">32×32 avatar</button>
+          <button class="pequena" data-wh="5,5">5×5 letra</button>
+          <button class="pequena" data-wh="64,9">64×9 franxa</button>
+          <button class="pequena" data-wh="54,54">54×54 post</button>
+        </div>
+        <div class="fila">
+          <span class="etq">filas/cols</span>
+          <div class="cruz">
+            <span></span><div class="c"><button data-r="+,arriba" title="Engade unha fila arriba">+↑</button><button data-r="-,arriba" title="Quita a fila de arriba">−↑</button></div><span></span>
+            <div class="c"><button data-r="+,esq" title="Engade unha columna á esquerda">+←</button><button data-r="-,esq" title="Quita a columna da esquerda">−←</button></div>
+            <span class="sec pequeno mono" id="g-tam">16×20</span>
+            <div class="c"><button data-r="+,der" title="Engade unha columna á dereita">+→</button><button data-r="-,der" title="Quita a columna da dereita">−→</button></div>
+            <span></span><div class="c"><button data-r="+,abaixo" title="Engade unha fila abaixo">+↓</button><button data-r="-,abaixo" title="Quita a fila de abaixo">−↓</button></div><span></span>
+          </div>
+        </div>
+        <div class="fila">
+          <span class="etq"></span>
+          <button class="pequena" id="b-recortar" title="Recorta a grella á caixa da tinta (coma recortar() en _elementos_pixel.py)">Recortar á tinta</button>
+          <button class="pequena" id="b-centrar" title="Move a tinta ao centro da grella">Centrar tinta</button>
+        </div>
+        <div class="fila">
+          <span class="etq">zoom</span>
+          <input id="g-zoom" type="range" min="3" max="80" step="1">
+          <span class="mono pequeno" id="g-zoom-v">24 px</span>
+          <button class="pequena" id="b-axustar-zoom" title="Que a grella colla enteira na pantalla">Axustar</button>
+        </div>
+        <div class="fila">
+          <span class="etq">vista</span>
+          <select id="g-trat">
+            <option value="magenta">magenta sobre papel</option>
+            <option value="tinta">tinta sobre papel</option>
+            <option value="negativo">papel sobre tinta</option>
+            <option value="bloque">papel sobre magenta (bloque)</option>
+          </select>
+        </div>
+        <div class="fila">
+          <span class="etq">tinta</span>
+          <input id="g-alpha" type="range" min="10" max="100" step="5">
+          <span class="mono pequeno" id="g-alpha-v">100 %</span>
+          <span class="sec pequeno">opacidade, para ver a imaxe de fondo debaixo</span>
+        </div>
+        <div class="fila">
+          <span class="etq">guías</span>
+          <label><input id="g-grid" type="checkbox" checked> liñas <kbd>G</kbd></label>
+          <label>cada <input id="g-guia" type="number" min="0" max="64" value="0" style="width:3.6em"> celas</label>
+        </div>
+        <div class="fila">
+          <span class="etq"></span>
+          <label><input id="g-caixa" type="checkbox"> caixa guía</label>
+          <input id="g-caixa-w" type="number" min="1" max="256" value="16" style="width:3.6em"> ×
+          <input id="g-caixa-h" type="number" min="1" max="256" value="20" style="width:3.6em">
+          <span class="sec pequeno">(16×20: caixa máxima dun pictograma)</span>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>Imaxe de fondo</summary>
+      <div class="corpo">
+        <div class="fila">
+          <button id="b-img-cargar">Cargar imaxe…</button>
+          <button id="b-img-quitar" class="pequena">Quitar</button>
+          <span class="sec pequeno">ou arrastra / pega (<kbd>Ctrl</kbd>+<kbd>V</kbd>) unha imaxe</span>
+        </div>
+        <div class="fila">
+          <span class="etq">opacidade</span>
+          <input id="i-alpha" type="range" min="0" max="100" step="5">
+          <span class="mono pequeno" id="i-alpha-v">50 %</span>
+        </div>
+        <div class="fila">
+          <span class="etq">posición</span>
+          x <input id="i-x" type="number" step="0.25"> y <input id="i-y" type="number" step="0.25">
+          <span class="sec pequeno">celas</span>
+        </div>
+        <div class="fila">
+          <span class="etq">largura</span>
+          <input id="i-w" type="number" step="0.25" min="0.25">
+          <span class="sec pequeno">celas</span>
+          <button class="pequena" id="b-img-axustar" title="Encaixa a imaxe na grella">Axustar</button>
+          <button class="pequena" id="b-img-centrar">Centrar</button>
+          <button class="pequena" id="b-img-1a1" title="1 píxel da imaxe = 1 cela">1 px = 1 cela</button>
+        </div>
+        <div class="fila">
+          <span class="etq"></span>
+          <label><input id="i-visible" type="checkbox" checked> visible <kbd>H</kbd></label>
+          <label><input id="i-flip" type="checkbox"> voltear ↔</label>
+          <label><input id="i-lock" type="checkbox"> bloquear</label>
+        </div>
+        <div class="nota">Ferramenta <b>Imaxe</b> (<kbd>I</kbd>): arrastra para mover, roda do rato para escalar (<kbd>Maiús</kbd> = fino), frechas para axustar. Con calquera ferramenta: <kbd>Espazo</kbd> + arrastrar move a imaxe, <kbd>Alt</kbd> + roda escálaa.</div>
+        <div class="fila cabeza">Celas da imaxe (limiar)</div>
+        <div class="fila">
+          <label><input id="l-on" type="checkbox"> previsualizar</label>
+          <input id="l-valor" type="range" min="0" max="255" step="1" value="128">
+          <span class="mono pequeno" id="l-valor-v">128</span>
+        </div>
+        <div class="fila">
+          <span class="etq"></span>
+          <label><input id="l-inv" type="checkbox"> inverter (tinta clara)</label>
+          <select id="l-modo"><option value="substituir">substituír o debuxo</option><option value="engadir">engadir ao debuxo</option></select>
+          <button class="pequena primaria" id="b-l-aplicar">Aplicar</button>
+        </div>
+        <div class="fila"><span class="sec pequeno">Media de luminosidade de cada cela: por debaixo do limiar, tinta. É un punto de partida para retocar á man, non un trazado.</span></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Biblioteca</summary>
+      <div class="corpo">
+        <div class="fila">
+          <span class="etq">ao premer</span>
+          <label><input type="radio" name="bib-modo" value="abrir" checked> abrir</label>
+          <label><input type="radio" name="bib-modo" value="estampar"> estampar</label>
+          <span class="sec pequeno"><kbd>Maiús</kbd>+clic fai o outro</span>
+        </div>
+        <div class="fila"><input id="bib-busca" type="text" placeholder="buscar…" spellcheck="false"></div>
+        <div class="fila"><button class="pequena" id="b-bib-engadir" title="Engade SVG da familia á biblioteca desta sesión">Engadir SVG…</button></div>
+        <div id="bib"></div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>Exportar</summary>
+      <div class="corpo">
+        <div class="fila">
+          <label><input id="e-recortar" type="checkbox" checked> recortar á tinta</label>
+          <span class="sec pequeno">(o viewBox é a caixa da tinta, coma escribir_svg)</span>
+        </div>
+        <div class="fila cabeza">SVG</div>
+        <div class="fila">
+          <select id="e-svg-trat">
+            <option value="magenta">magenta</option>
+            <option value="tinta">_tinta</option>
+            <option value="papel">_papel</option>
+            <option value="bloque">_bloque (papel sobre magenta, marxe 6)</option>
+          </select>
+          <button class="primaria" id="b-svg">Descargar SVG</button>
+          <button id="b-svg-copiar">Copiar</button>
+        </div>
+        <div class="fila cabeza">PNG</div>
+        <div class="fila">
+          <select id="e-png-cela">
+            <option value="4">4 px/cela</option><option value="8">8 px/cela</option>
+            <option value="16" selected>16 px/cela</option><option value="32">32 px/cela</option><option value="64">64 px/cela</option>
+          </select>
+          <select id="e-png-fondo">
+            <option value="magenta">magenta / papel</option>
+            <option value="tinta">tinta / papel</option>
+            <option value="negativo">papel / tinta</option>
+            <option value="bloque">papel / magenta</option>
+            <option value="transparente">magenta / transparente</option>
+          </select>
+          <label><input id="e-png-zona" type="checkbox"> marxe ZONA (6)</label>
+          <button class="primaria" id="b-png">Descargar PNG</button>
+        </div>
+        <div class="fila cabeza">Matriz (Python / texto)</div>
+        <div class="fila">
+          <button class="pequena" id="b-mat-xerar">Xerar</button>
+          <button class="pequena" id="b-mat-copiar">Copiar</button>
+          <button class="pequena" id="b-mat-importar" title="Le as filas do cadro (formato M('...'), '#'/'.' ou '██'/'· ') e substitúe o debuxo">Importar do cadro</button>
+        </div>
+        <div class="fila bloque"><textarea id="e-mat" rows="6" spellcheck="false" placeholder='ELEMENTO = M(&#10;    ".###.",&#10;    "#...#",&#10;)'></textarea></div>
+        <div class="fila cabeza">Importar</div>
+        <div class="fila">
+          <button class="pequena" id="b-png-debuxo">PNG como debuxo…</button>
+          <label>cela <input id="png-cela" type="number" min="1" max="256" value="16" style="width:3.6em"> px</label>
+          <label><input id="png-inv" type="checkbox"> inverter</label>
+        </div>
+        <div class="fila"><span class="sec pequeno">Os PNG de exportacions/elementos/ van a 16 px/cela; os de exportacions/png/ levan a cela no nome.</span></div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>Vista previa</summary>
+      <div class="corpo">
+        <div class="previas" id="previas"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Atallos</summary>
+      <div class="corpo pequeno">
+        <div class="fila"><kbd>B</kbd> lapis · <kbd>E</kbd> goma · <kbd>L</kbd> liña · <kbd>R</kbd> rectángulo · <kbd>O</kbd> elipse · <kbd>F</kbd> cubo · <kbd>S</kbd> selección · <kbd>M</kbd> mover · <kbd>I</kbd> imaxe</div>
+        <div class="fila">Botón dereito borra. <kbd>Maiús</kbd> + lapis: liña dende a última cela. <kbd>Maiús</kbd> con rectángulo/elipse: cheos.</div>
+        <div class="fila"><kbd>X</kbd> / <kbd>Y</kbd> espello horizontal / vertical · <kbd>G</kbd> grella · <kbd>H</kbd> imaxe · <kbd>[</kbd> <kbd>]</kbd> zoom · <kbd>Ctrl</kbd>+roda zoom</div>
+        <div class="fila"><kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> desfacer/refacer · <kbd>Ctrl</kbd>+<kbd>A</kbd>/<kbd>C</kbd>/<kbd>X</kbd>/<kbd>V</kbd> seleccionar todo, copiar, cortar, pegar · <kbd>Supr</kbd> borrar</div>
+        <div class="fila">Selección: arrastra dentro para levantala e movela; <kbd>Intro</kbd> fíxaa; frechas móvena. Sen selección, as frechas moven todo o debuxo.</div>
+      </div>
+    </details>
+
+  </aside>
+</main>
+
+<footer id="estado">
+  <span id="s-cela">—</span>
+  <span id="s-grella"></span>
+  <span id="s-tinta"></span>
+  <span id="s-pista" class="sec"></span>
+  <span id="toast"></span>
+</footer>
+
+<input type="file" id="ficheiro" hidden accept=".svg,.png,.jpg,.jpeg,.gif,.webp,.bmp,.json,.txt,.py,.md" multiple>
+<input type="file" id="ficheiro-img" hidden accept="image/*">
+<input type="file" id="ficheiro-png" hidden accept="image/*">
+<input type="file" id="ficheiro-bib" hidden accept=".svg" multiple>
+
+<script src="editor_biblioteca.js"></script>
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════════════
+//  Constantes da marca (as mesmas de _xerar_lockup_pixel.py)
+// ═══════════════════════════════════════════════════════════════════════
+const MAG = '#E4007C', TINTA = '#1A1A1A', PAPEL = '#F5F3EC', ZONA = 6;
+const TRATS = {
+  magenta:  { ink: MAG,   bg: PAPEL, claro: true  },
+  tinta:    { ink: TINTA, bg: PAPEL, claro: true  },
+  negativo: { ink: PAPEL, bg: TINTA, claro: false },
+  bloque:   { ink: PAPEL, bg: MAG,   claro: false },
+};
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Estado
+// ═══════════════════════════════════════════════════════════════════════
+const S = {
+  W: 16, H: 20, cells: new Uint8Array(16 * 20), nome: 'elemento',
+  zoom: 24, tool: 'lapis', mirrorH: false, mirrorV: false,
+  grid: true, guia: 0, caixa: false, caixaW: 16, caixaH: 20,
+  trat: 'magenta', inkAlpha: 1,
+  img: { el: null, src: null, natW: 0, natH: 0, x: 0, y: 0, w: 16, alpha: .5, visible: true, locked: false, flip: false },
+  limiar: { on: false, valor: 128, inverter: false, modo: 'substituir' },
+  sel: null,        // {x0,y0,x1,y1} inclusivo
+  floating: null,   // {x,y,w,h,cells} capa flotante (pegado, estampa, selección levantada)
+};
+let clipboard = null, history = [], future = [], hover = null, drag = null, lastCell = null;
+let previewCells = null, spaceDown = false, imgSample = null, limiarM = null;
+const cv = $('#lenzo'), ctx = cv.getContext('2d');
+const idx = (c, r) => r * S.W + c;
+const inb = (c, r) => c >= 0 && r >= 0 && c < S.W && r < S.H;
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Historial
+// ═══════════════════════════════════════════════════════════════════════
+const cloneFloat = f => f && { ...f, cells: f.cells.slice() };
+function snapshot() { return { W: S.W, H: S.H, cells: S.cells.slice(), sel: S.sel && { ...S.sel }, floating: cloneFloat(S.floating) }; }
+function restore(sn) { S.W = sn.W; S.H = sn.H; S.cells = sn.cells.slice(); S.sel = sn.sel && { ...sn.sel }; S.floating = cloneFloat(sn.floating); }
+function push() { history.push(snapshot()); if (history.length > 300) history.shift(); future.length = 0; }
+function undo() { if (!history.length) return; future.push(snapshot()); restore(history.pop()); previewCells = null; commit(); }
+function redo() { if (!future.length) return; history.push(snapshot()); restore(future.pop()); commit(); }
+function commit() { syncGrella(); render(); estado(); renderPrevias(); autosave(); }
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Primitivas de debuxo (todo en celas enteiras)
+// ═══════════════════════════════════════════════════════════════════════
+function setCell(c, r, v) {
+  if (inb(c, r)) S.cells[idx(c, r)] = v;
+  if (S.mirrorH && inb(S.W - 1 - c, r)) S.cells[idx(S.W - 1 - c, r)] = v;
+  if (S.mirrorV && inb(c, S.H - 1 - r)) S.cells[idx(c, S.H - 1 - r)] = v;
+  if (S.mirrorH && S.mirrorV && inb(S.W - 1 - c, S.H - 1 - r)) S.cells[idx(S.W - 1 - c, S.H - 1 - r)] = v;
+}
+function line(c0, r0, c1, r1, fn) {   // Bresenham
+  let dx = Math.abs(c1 - c0), dy = -Math.abs(r1 - r0), sx = c0 < c1 ? 1 : -1, sy = r0 < r1 ? 1 : -1, err = dx + dy;
+  for (let n = 0; n < 100000; n++) {
+    fn(c0, r0);
+    if (c0 === c1 && r0 === r1) break;
+    const e2 = 2 * err;
+    if (e2 >= dy) { err += dy; c0 += sx; }
+    if (e2 <= dx) { err += dx; r0 += sy; }
+  }
+}
+function rectCells(a, b, filled, fn) {
+  const x0 = Math.min(a.c, b.c), x1 = Math.max(a.c, b.c), y0 = Math.min(a.r, b.r), y1 = Math.max(a.r, b.r);
+  for (let r = y0; r <= y1; r++) for (let c = x0; c <= x1; c++)
+    if (filled || r === y0 || r === y1 || c === x0 || c === x1) fn(c, r);
+}
+function ellipseCells(a, b, filled, fn) {
+  const x0 = Math.min(a.c, b.c), x1 = Math.max(a.c, b.c), y0 = Math.min(a.r, b.r), y1 = Math.max(a.r, b.r);
+  const cx = (x0 + x1 + 1) / 2, cy = (y0 + y1 + 1) / 2, rx = (x1 - x0 + 1) / 2, ry = (y1 - y0 + 1) / 2;
+  const inside = (c, r) => { const u = (c + .5 - cx) / rx, v = (r + .5 - cy) / ry; return u * u + v * v <= 1; };
+  for (let r = y0; r <= y1; r++) for (let c = x0; c <= x1; c++) {
+    if (!inside(c, r)) continue;
+    if (filled || !(inside(c - 1, r) && inside(c + 1, r) && inside(c, r - 1) && inside(c, r + 1))) fn(c, r);
+  }
+}
+function fill(c, r, v) {
+  const t = S.cells[idx(c, r)]; if (t === v) return false;
+  const st = [[c, r]]; S.cells[idx(c, r)] = v;
+  while (st.length) {
+    const [x, y] = st.pop();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (inb(nx, ny) && S.cells[idx(nx, ny)] === t) { S.cells[idx(nx, ny)] = v; st.push([nx, ny]); }
+    }
+  }
+  return true;
+}
+function shapeCells(d, fn) {
+  if (d.tool === 'linha') line(d.a.c, d.a.r, d.b.c, d.b.r, fn);
+  else if (d.tool === 'rect') rectCells(d.a, d.b, d.filled, fn);
+  else if (d.tool === 'elipse') ellipseCells(d.a, d.b, d.filled, fn);
+}
+function bbox(cells = S.cells, W = S.W, H = S.H) {
+  let x0 = W, y0 = H, x1 = -1, y1 = -1;
+  for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (cells[r * W + c]) {
+    if (c < x0) x0 = c; if (c > x1) x1 = c; if (r < y0) y0 = r; if (r > y1) y1 = r;
+  }
+  return x1 < 0 ? null : { x0, y0, x1, y1, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+function countInk() { let n = 0; for (const v of S.cells) n += v; return n; }
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Grella: redimensionar, recortar, centrar, transformar
+// ═══════════════════════════════════════════════════════════════════════
+function resize(nW, nH, dx, dy) {
+  nW = clamp(Math.round(nW), 1, 256); nH = clamp(Math.round(nH), 1, 256);
+  if (S.floating) anchorFloating(false);
+  push();
+  const n = new Uint8Array(nW * nH);
+  for (let r = 0; r < S.H; r++) for (let c = 0; c < S.W; c++) if (S.cells[idx(c, r)]) {
+    const nc = c + dx, nr = r + dy;
+    if (nc >= 0 && nr >= 0 && nc < nW && nr < nH) n[nr * nW + nc] = 1;
+  }
+  S.W = nW; S.H = nH; S.cells = n; S.sel = null; limiarM = null;
+  commit();
+}
+function recortar() { const b = bbox(); if (!b) return aviso('Non hai tinta que recortar'); resize(b.w, b.h, -b.x0, -b.y0); }
+function centrar() {
+  const b = bbox(); if (!b) return;
+  const dx = Math.floor((S.W - b.w) / 2) - b.x0, dy = Math.floor((S.H - b.h) / 2) - b.y0;
+  if (dx || dy) shiftAll(dx, dy);
+}
+function shiftAll(dx, dy) {
+  push();
+  const n = new Uint8Array(S.W * S.H);
+  for (let r = 0; r < S.H; r++) for (let c = 0; c < S.W; c++) if (S.cells[idx(c, r)] && inb(c + dx, r + dy)) n[idx(c + dx, r + dy)] = 1;
+  S.cells = n; commit();
+}
+function transformar(kind) {     // 'flipH' | 'flipV' | 'rot'
+  const tr = (cells, w, h) => {
+    const nw = kind === 'rot' ? h : w, nh = kind === 'rot' ? w : h, n = new Uint8Array(nw * nh);
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) if (cells[r * w + c]) {
+      if (kind === 'flipH') n[r * nw + (w - 1 - c)] = 1;
+      else if (kind === 'flipV') n[(h - 1 - r) * nw + c] = 1;
+      else n[c * nw + (h - 1 - r)] = 1;          // 90° horario
+    }
+    return { cells: n, w: nw, h: nh };
+  };
+  if (!S.floating && S.sel) { push(); liftSelection(); }
+  if (S.floating) {
+    push();
+    const f = S.floating, t = tr(f.cells, f.w, f.h);
+    S.floating = { ...f, cells: t.cells, w: t.w, h: t.h };
+    commit(); pista('Peza transformada: arrástraa e preme Intro para fixala');
+    return;
+  }
+  push();
+  const t = tr(S.cells, S.W, S.H);
+  S.cells = t.cells; S.W = t.w; S.H = t.h; limiarM = null;
+  commit();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Selección e capa flotante
+// ═══════════════════════════════════════════════════════════════════════
+const inSel = p => S.sel && p.c >= S.sel.x0 && p.c <= S.sel.x1 && p.r >= S.sel.y0 && p.r <= S.sel.y1;
+const inFloating = p => S.floating && p.c >= S.floating.x && p.c < S.floating.x + S.floating.w && p.r >= S.floating.y && p.r < S.floating.y + S.floating.h;
+function liftSelection() {
+  const s = S.sel, w = s.x1 - s.x0 + 1, h = s.y1 - s.y0 + 1, cells = new Uint8Array(w * h);
+  for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+    cells[r * w + c] = S.cells[idx(s.x0 + c, s.y0 + r)]; S.cells[idx(s.x0 + c, s.y0 + r)] = 0;
+  }
+  S.floating = { x: s.x0, y: s.y0, w, h, cells }; S.sel = null;
+}
+function anchorFloating(doCommit = true) {
+  const f = S.floating; if (!f) return;
+  push();
+  for (let r = 0; r < f.h; r++) for (let c = 0; c < f.w; c++) if (f.cells[r * f.w + c] && inb(f.x + c, f.y + r)) S.cells[idx(f.x + c, f.y + r)] = 1;
+  S.floating = null;
+  if (doCommit) commit();
+}
+function copySel(cut) {
+  if (S.floating) { clipboard = { w: S.floating.w, h: S.floating.h, cells: S.floating.cells.slice() }; if (cut) { push(); S.floating = null; commit(); } return aviso('Copiado'); }
+  const s = S.sel || { x0: 0, y0: 0, x1: S.W - 1, y1: S.H - 1 };
+  const w = s.x1 - s.x0 + 1, h = s.y1 - s.y0 + 1, cells = new Uint8Array(w * h);
+  for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) cells[r * w + c] = S.cells[idx(s.x0 + c, s.y0 + r)];
+  clipboard = { w, h, cells };
+  if (cut) { push(); for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) S.cells[idx(s.x0 + c, s.y0 + r)] = 0; commit(); }
+  aviso(cut ? 'Cortado' : 'Copiado');
+}
+function pasteFloating(src, at) {
+  if (S.floating) anchorFloating(false);
+  push();
+  const p = at || (S.sel ? { c: S.sel.x0, r: S.sel.y0 } : hover) || { c: 0, r: 0 };
+  S.floating = { x: clamp(p.c, -src.w + 1, S.W - 1), y: clamp(p.r, -src.h + 1, S.H - 1), w: src.w, h: src.h, cells: src.cells.slice() };
+  S.sel = null; setTool('sel');
+  commit(); pista('Arrastra a peza e preme Intro para fixala (Esc tamén a fixa; Supr descártaa)');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Imaxe de fondo
+// ═══════════════════════════════════════════════════════════════════════
+const imgH = () => S.img.w * S.img.natH / S.img.natW;
+function setImage(src, keep) {
+  const im = new Image();
+  im.onload = () => {
+    S.img.el = im; S.img.src = src; S.img.natW = im.naturalWidth; S.img.natH = im.naturalHeight;
+    if (!keep) { S.img.visible = true; fitImage(); }
+    imgSample = null; limiarM = null; syncImaxe(); render(); autosave();
+  };
+  im.onerror = () => aviso('Non se puido ler a imaxe');
+  im.src = src;
+}
+function loadImageFile(file) { const rd = new FileReader(); rd.onload = () => setImage(rd.result); rd.readAsDataURL(file); }
+function fitImage() {
+  if (!S.img.el) return;
+  const ar = S.img.natW / S.img.natH; let w = S.W, h = w / ar;
+  if (h > S.H) { h = S.H; w = h * ar; }
+  S.img.w = w; S.img.x = (S.W - w) / 2; S.img.y = (S.H - h) / 2; limiarM = null;
+}
+function centerImage() { if (!S.img.el) return; S.img.x = (S.W - S.img.w) / 2; S.img.y = (S.H - imgH()) / 2; limiarM = null; }
+function scaleImageAbout(fx, fy, k) {
+  S.img.x = fx - (fx - S.img.x) * k; S.img.y = fy - (fy - S.img.y) * k; S.img.w *= k; limiarM = null;
+  syncImaxe(); render(); autosave();
+}
+function limiarMatrix() {
+  if (!S.img.el) return null;
+  const key = [S.W, S.H, S.img.x, S.img.y, S.img.w, S.img.flip, S.limiar.valor, S.limiar.inverter, S.img.src && S.img.src.length].join('|');
+  if (limiarM && limiarM.key === key) return limiarM.m;
+  if (!imgSample || imgSample.src !== S.img.src) {
+    const im = S.img.el, k = Math.min(1, 1024 / Math.max(im.naturalWidth, im.naturalHeight));
+    const sw = Math.max(1, Math.round(im.naturalWidth * k)), sh = Math.max(1, Math.round(im.naturalHeight * k));
+    const oc = document.createElement('canvas'); oc.width = sw; oc.height = sh;
+    const o = oc.getContext('2d'); o.drawImage(im, 0, 0, sw, sh);
+    imgSample = { src: S.img.src, px: o.getImageData(0, 0, sw, sh).data, sw, sh };
+  }
+  const { px, sw, sh } = imgSample, ih = imgH(), n = 4, out = new Uint8Array(S.W * S.H);
+  for (let r = 0; r < S.H; r++) for (let c = 0; c < S.W; c++) {
+    let sum = 0, cov = 0;
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      let u = (c + (i + .5) / n - S.img.x) / S.img.w; const v = (r + (j + .5) / n - S.img.y) / ih;
+      if (S.img.flip) u = 1 - u;
+      if (u < 0 || u >= 1 || v < 0 || v >= 1) continue;
+      const o = (Math.floor(v * sh) * sw + Math.floor(u * sw)) * 4;
+      if (px[o + 3] < 128) continue;
+      cov++; sum += .2126 * px[o] + .7152 * px[o + 1] + .0722 * px[o + 2];
+    }
+    if (cov < n * n / 2) continue;
+    let ink = sum / cov < S.limiar.valor; if (S.limiar.inverter) ink = !ink;
+    out[idx(c, r)] = ink ? 1 : 0;
+  }
+  limiarM = { key, m: out };
+  return out;
+}
+function aplicarLimiar() {
+  const m = limiarMatrix(); if (!m) return aviso('Primeiro carga unha imaxe de fondo');
+  if (S.floating) anchorFloating(false);
+  push();
+  if (S.limiar.modo === 'substituir') S.cells = m.slice(); else for (let i = 0; i < m.length; i++) if (m[i]) S.cells[i] = 1;
+  commit();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Render
+// ═══════════════════════════════════════════════════════════════════════
+function dashRect(x, y, w, h, cor) {
+  ctx.save(); ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = 'rgba(0,0,0,.75)'; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+  ctx.strokeStyle = cor || 'rgba(255,255,255,.95)'; ctx.lineDashOffset = 4; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+  ctx.restore();
+}
+function render() {
+  const z = S.zoom, W = S.W, H = S.H, dpr = window.devicePixelRatio || 1, cw = W * z + 1, ch = H * z + 1;
+  if (cv.width !== Math.round(cw * dpr) || cv.height !== Math.round(ch * dpr)) {
+    cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const T = TRATS[S.trat];
+  ctx.fillStyle = T.bg; ctx.fillRect(0, 0, cw, ch);
+
+  if (S.img.el && S.img.visible && S.img.alpha > 0) {
+    ctx.save(); ctx.globalAlpha = S.img.alpha; ctx.imageSmoothingEnabled = S.img.w < S.img.natW;
+    const iw = S.img.w * z, ih = imgH() * z, ix = S.img.x * z, iy = S.img.y * z;
+    if (S.img.flip) { ctx.translate(ix + iw, iy); ctx.scale(-1, 1); ctx.drawImage(S.img.el, 0, 0, iw, ih); }
+    else ctx.drawImage(S.img.el, ix, iy, iw, ih);
+    ctx.restore();
+  }
+  ctx.globalAlpha = S.inkAlpha; ctx.fillStyle = T.ink;
+  for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (S.cells[r * W + c]) ctx.fillRect(c * z, r * z, z, z);
+  ctx.globalAlpha = 1;
+
+  if (S.limiar.on && S.img.el) {
+    const m = limiarMatrix(), pad = z >= 6 ? 1 : 0; ctx.fillStyle = 'rgba(0,150,200,.55)';
+    for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (m[r * W + c]) ctx.fillRect(c * z + pad, r * z + pad, z - 2 * pad, z - 2 * pad);
+  }
+  if (previewCells) {
+    ctx.fillStyle = previewCells.v ? T.ink : T.bg; ctx.globalAlpha = .6;
+    for (const k of previewCells.set) { const [c, r] = k.split(',').map(Number); if (inb(c, r)) ctx.fillRect(c * z, r * z, z, z); }
+    ctx.globalAlpha = 1;
+  }
+  if (S.floating) {
+    const f = S.floating; ctx.fillStyle = T.ink; ctx.globalAlpha = .9;
+    for (let r = 0; r < f.h; r++) for (let c = 0; c < f.w; c++) if (f.cells[r * f.w + c]) ctx.fillRect((f.x + c) * z, (f.y + r) * z, z, z);
+    ctx.globalAlpha = 1;
+    dashRect(f.x * z, f.y * z, f.w * z + 1, f.h * z + 1, '#FFD400');
+  }
+  if (S.grid && z >= 4) {
+    ctx.strokeStyle = T.claro ? 'rgba(26,26,26,.13)' : 'rgba(245,243,236,.2)'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let c = 0; c <= W; c++) { ctx.moveTo(c * z + .5, 0); ctx.lineTo(c * z + .5, ch); }
+    for (let r = 0; r <= H; r++) { ctx.moveTo(0, r * z + .5); ctx.lineTo(cw, r * z + .5); }
+    ctx.stroke();
+  }
+  if (S.guia > 1) {
+    ctx.strokeStyle = T.claro ? 'rgba(26,26,26,.42)' : 'rgba(245,243,236,.5)'; ctx.beginPath();
+    for (let c = S.guia; c < W; c += S.guia) { ctx.moveTo(c * z + .5, 0); ctx.lineTo(c * z + .5, ch); }
+    for (let r = S.guia; r < H; r += S.guia) { ctx.moveTo(0, r * z + .5); ctx.lineTo(cw, r * z + .5); }
+    ctx.stroke();
+  }
+  ctx.strokeStyle = T.claro ? 'rgba(26,26,26,.6)' : 'rgba(245,243,236,.6)'; ctx.strokeRect(.5, .5, cw - 1, ch - 1);
+  if (S.caixa) dashRect(0, 0, Math.min(S.caixaW, W) * z + 1, Math.min(S.caixaH, H) * z + 1, T.claro ? MAG : '#FFD400');
+  if (S.mirrorH || S.mirrorV) {
+    ctx.save(); ctx.setLineDash([6, 4]); ctx.strokeStyle = 'rgba(30,111,232,.8)'; ctx.beginPath();
+    if (S.mirrorH) { ctx.moveTo(W / 2 * z + .5, 0); ctx.lineTo(W / 2 * z + .5, ch); }
+    if (S.mirrorV) { ctx.moveTo(0, H / 2 * z + .5); ctx.lineTo(cw, H / 2 * z + .5); }
+    ctx.stroke(); ctx.restore();
+  }
+  if (S.sel) dashRect(S.sel.x0 * z, S.sel.y0 * z, (S.sel.x1 - S.sel.x0 + 1) * z + 1, (S.sel.y1 - S.sel.y0 + 1) * z + 1);
+  if (hover && !drag && z >= 6) {
+    ctx.strokeStyle = T.claro ? 'rgba(30,111,232,.9)' : 'rgba(127,179,255,.95)'; ctx.lineWidth = 2;
+    ctx.strokeRect(hover.c * z + 1, hover.r * z + 1, z - 2, z - 2); ctx.lineWidth = 1;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Rato e teclado
+// ═══════════════════════════════════════════════════════════════════════
+function cellAt(e) {
+  const b = cv.getBoundingClientRect(), x = e.clientX - b.left, y = e.clientY - b.top;
+  return { fx: x / S.zoom, fy: y / S.zoom, c: Math.floor(x / S.zoom), r: Math.floor(y / S.zoom) };
+}
+const clampC = c => clamp(c, 0, S.W - 1), clampR = r => clamp(r, 0, S.H - 1);
+
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('pointerdown', e => {
+  if (e.button > 2) return;
+  $('#lenzo-wrap').focus({ preventScroll: true });
+  cv.setPointerCapture(e.pointerId);
+  const p = cellAt(e), erase = e.button === 2;
+  if (e.button === 1 || spaceDown || S.tool === 'imaxe') {
+    if (S.img.el && !S.img.locked) { drag = { kind: 'img', sx: p.fx, sy: p.fy, ox: S.img.x, oy: S.img.y }; cv.classList.add('arrastrando'); }
+    else if (!S.img.el) aviso('Non hai imaxe de fondo: cárgaa no panel «Imaxe de fondo»');
+    e.preventDefault(); return;
+  }
+  switch (S.tool) {
+    case 'lapis': case 'goma': {
+      const v = (S.tool === 'goma' || erase) ? 0 : 1;
+      if (S.floating) anchorFloating(false);
+      push();
+      if (e.shiftKey && lastCell) line(lastCell.c, lastCell.r, p.c, p.r, (c, r) => setCell(c, r, v)); else setCell(p.c, p.r, v);
+      lastCell = { c: p.c, r: p.r }; drag = { kind: 'paint', v, last: { c: p.c, r: p.r } };
+      render(); break;
+    }
+    case 'linha': case 'rect': case 'elipse':
+      if (S.floating) anchorFloating(false);
+      drag = { kind: 'shape', tool: S.tool, v: erase ? 0 : 1, a: { c: p.c, r: p.r }, b: { c: p.c, r: p.r }, filled: e.shiftKey };
+      updateShapePreview(drag); render(); break;
+    case 'cubo': {
+      if (!inb(p.c, p.r)) return;
+      if (S.floating) anchorFloating(false);
+      push(); if (fill(p.c, p.r, erase ? 0 : 1)) commit(); else history.pop(); break;
+    }
+    case 'mover':
+      if (S.floating) { drag = { kind: 'float', sx: p.c, sy: p.r, ox: S.floating.x, oy: S.floating.y }; break; }
+      push(); drag = { kind: 'move', sx: p.c, sy: p.r, orig: S.cells.slice() }; break;
+    case 'sel':
+      if (S.floating && inFloating(p)) { drag = { kind: 'float', sx: p.c, sy: p.r, ox: S.floating.x, oy: S.floating.y }; break; }
+      if (S.floating) anchorFloating(false);
+      if (S.sel && inSel(p) && !erase) { push(); liftSelection(); drag = { kind: 'float', sx: p.c, sy: p.r, ox: S.floating.x, oy: S.floating.y }; render(); break; }
+      { const a = { c: clampC(p.c), r: clampR(p.r) }; S.sel = { x0: a.c, y0: a.r, x1: a.c, y1: a.r }; drag = { kind: 'sel', a, moved: false }; render(); }
+      break;
+  }
+  estado();
+});
+window.addEventListener('pointermove', e => {
+  const p = cellAt(e), h = inb(p.c, p.r) ? p : null;
+  const hoverChanged = (h && !hover) || (!h && hover) || (h && hover && (h.c !== hover.c || h.r !== hover.r));
+  hover = h;
+  if (!drag) { if (hoverChanged) { render(); estado(); } return; }
+  switch (drag.kind) {
+    case 'img': S.img.x = drag.ox + (p.fx - drag.sx); S.img.y = drag.oy + (p.fy - drag.sy); limiarM = null; syncImaxe(); render(); break;
+    case 'paint':
+      if (p.c !== drag.last.c || p.r !== drag.last.r) { line(drag.last.c, drag.last.r, p.c, p.r, (c, r) => setCell(c, r, drag.v)); drag.last = { c: p.c, r: p.r }; lastCell = drag.last; render(); }
+      break;
+    case 'shape': drag.b = { c: p.c, r: p.r }; drag.filled = e.shiftKey; updateShapePreview(drag); render(); break;
+    case 'move': {
+      const dc = p.c - drag.sx, dr = p.r - drag.sy; S.cells.fill(0);
+      for (let r = 0; r < S.H; r++) for (let c = 0; c < S.W; c++) if (drag.orig[idx(c, r)] && inb(c + dc, r + dr)) S.cells[idx(c + dc, r + dr)] = 1;
+      render(); break;
+    }
+    case 'float': S.floating.x = drag.ox + (p.c - drag.sx); S.floating.y = drag.oy + (p.r - drag.sy); render(); break;
+    case 'sel': {
+      const c = clampC(p.c), r = clampR(p.r); if (c !== drag.a.c || r !== drag.a.r) drag.moved = true;
+      S.sel = { x0: Math.min(drag.a.c, c), y0: Math.min(drag.a.r, r), x1: Math.max(drag.a.c, c), y1: Math.max(drag.a.r, r) }; render(); break;
+    }
+  }
+  estado();
+});
+window.addEventListener('pointerup', () => {
+  if (!drag) return;
+  const d = drag; drag = null; cv.classList.remove('arrastrando');
+  switch (d.kind) {
+    case 'paint': case 'move': case 'float': commit(); break;
+    case 'shape': push(); shapeCells(d, (c, r) => setCell(c, r, d.v)); previewCells = null; commit(); break;
+    case 'sel': if (!d.moved) S.sel = null; render(); estado(); break;
+    case 'img': autosave(); break;
+  }
+});
+window.addEventListener('pointercancel', () => { if (drag && drag.kind === 'shape') previewCells = null; drag = null; render(); });
+function updateShapePreview(d) { const set = new Set(); shapeCells(d, (c, r) => set.add(c + ',' + r)); previewCells = { set, v: d.v }; }
+
+cv.addEventListener('wheel', e => {
+  if (e.ctrlKey || e.metaKey) { e.preventDefault(); setZoom(S.zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15)); return; }
+  if ((S.tool === 'imaxe' || e.altKey) && S.img.el && !S.img.locked) {
+    e.preventDefault(); const p = cellAt(e), f = e.shiftKey ? 1.01 : 1.05;
+    scaleImageAbout(p.fx, p.fy, e.deltaY < 0 ? f : 1 / f);
+  }
+}, { passive: false });
+
+window.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') { if (e.key === 'Escape') e.target.blur(); return; }
+  const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+  if (mod) {
+    if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+    else if (k === 'y') { e.preventDefault(); redo(); }
+    else if (k === 'c') { e.preventDefault(); copySel(false); }
+    else if (k === 'x') { e.preventDefault(); copySel(true); }
+    else if (k === 'a') { e.preventDefault(); if (S.floating) anchorFloating(false); S.sel = { x0: 0, y0: 0, x1: S.W - 1, y1: S.H - 1 }; setTool('sel'); render(); }
+    else if (k === 's') { e.preventDefault(); gardarJSON(); }
+    return;   // Ctrl+V chega polo evento 'paste'
+  }
+  const tools = { b: 'lapis', e: 'goma', l: 'linha', r: 'rect', o: 'elipse', f: 'cubo', s: 'sel', m: 'mover', i: 'imaxe' };
+  if (tools[k] && !e.altKey) { setTool(tools[k]); return; }
+  switch (e.key) {
+    case ' ': spaceDown = true; e.preventDefault(); break;
+    case 'x': case 'X': toggleMirror('H'); break;
+    case 'y': case 'Y': toggleMirror('V'); break;
+    case 'g': case 'G': S.grid = !S.grid; $('#g-grid').checked = S.grid; render(); autosave(); break;
+    case 'h': case 'H': S.img.visible = !S.img.visible; $('#i-visible').checked = S.img.visible; render(); autosave(); break;
+    case '[': setZoom(S.zoom - (S.zoom > 12 ? 4 : 1)); break;
+    case ']': setZoom(S.zoom + (S.zoom >= 12 ? 4 : 1)); break;
+    case 'Enter': if (S.floating) anchorFloating(); S.sel = null; render(); break;
+    case 'Escape': if (S.floating) anchorFloating(); S.sel = null; previewCells = null; drag = null; render(); estado(); break;
+    case 'Delete': case 'Backspace':
+      e.preventDefault();
+      if (S.floating) { push(); S.floating = null; commit(); }
+      else if (S.sel) { push(); for (let r = S.sel.y0; r <= S.sel.y1; r++) for (let c = S.sel.x0; c <= S.sel.x1; c++) S.cells[idx(c, r)] = 0; commit(); }
+      break;
+    case 'ArrowLeft': e.preventDefault(); nudge(-1, 0, e.shiftKey); break;
+    case 'ArrowRight': e.preventDefault(); nudge(1, 0, e.shiftKey); break;
+    case 'ArrowUp': e.preventDefault(); nudge(0, -1, e.shiftKey); break;
+    case 'ArrowDown': e.preventDefault(); nudge(0, 1, e.shiftKey); break;
+  }
+});
+window.addEventListener('keyup', e => { if (e.key === ' ') spaceDown = false; });
+function nudge(dx, dy, fino) {
+  if (S.tool === 'imaxe' && S.img.el && !S.img.locked) {
+    const k = fino ? .05 : .25; S.img.x += dx * k; S.img.y += dy * k; limiarM = null; syncImaxe(); render(); autosave(); return;
+  }
+  if (S.floating) { S.floating.x += dx; S.floating.y += dy; render(); return; }
+  if (S.sel) { const s = S.sel; if (s.x0 + dx < 0 || s.x1 + dx >= S.W || s.y0 + dy < 0 || s.y1 + dy >= S.H) return; push(); liftSelection(); S.floating.x += dx; S.floating.y += dy; commit(); pista('Selección levantada: Intro para fixala'); return; }
+  shiftAll(dx, dy);
+}
+document.addEventListener('paste', e => {
+  const tag = (e.target.tagName || '').toLowerCase(); if (tag === 'input' || tag === 'textarea') return;
+  for (const it of e.clipboardData?.items || []) if (it.type.startsWith('image/')) { e.preventDefault(); loadImageFile(it.getAsFile()); aviso('Imaxe pegada como fondo'); return; }
+  if (clipboard) { e.preventDefault(); pasteFloating(clipboard); }
+});
+// arrastrar e soltar ficheiros
+const wrap = $('#lenzo-wrap');
+['dragenter', 'dragover'].forEach(t => wrap.addEventListener(t, e => { e.preventDefault(); wrap.classList.add('solta'); }));
+['dragleave', 'drop'].forEach(t => wrap.addEventListener(t, e => { e.preventDefault(); wrap.classList.remove('solta'); }));
+wrap.addEventListener('drop', e => { for (const f of e.dataTransfer.files) abrirFicheiro(f); });
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Ferramentas (barra esquerda) — iconas debuxadas en celas, como todo
+// ═══════════════════════════════════════════════════════════════════════
+const ICONAS = {
+  lapis:  ['......##.', '.....#..#', '....#..#.', '...#..#..', '..#..#...', '.#..#....', '##.#.....', '#.#......', '##.......'],
+  goma:   ['.........', '.....###.', '....#..##', '...#..##.', '..#..##..', '.#..##...', '####.....', '.........', '.........'],
+  linha:  ['........#', '.......#.', '......#..', '.....#...', '....#....', '...#.....', '..#......', '.#.......', '#........'],
+  rect:   ['#########', '#.......#', '#.......#', '#.......#', '#.......#', '#.......#', '#.......#', '#.......#', '#########'],
+  elipse: ['...###...', '..#...#..', '.#.....#.', '#.......#', '#.......#', '#.......#', '.#.....#.', '..#...#..', '...###...'],
+  cubo:   ['....##...', '...#..#..', '..#....#.', '.#......#', '#..#.....', '.#.#.....', '..#.#....', '...#.#...', '....##...'],
+  sel:    ['#.#.#.#.#', '.........', '#.......#', '.........', '#.......#', '.........', '#.......#', '.........', '#.#.#.#.#'],
+  mover:  ['....#....', '...###...', '....#....', '.#..#..#.', '#########', '.#..#..#.', '....#....', '...###...', '....#....'],
+  imaxe:  ['#########', '#.......#', '#.....#.#', '#.......#', '#...#...#', '#..#.#..#', '#.#...#.#', '##.....##', '#########'],
+  espH:   ['#...#...#', '##..#..##', '#.#.#.#.#', '#..###..#', '#...#...#', '#..###..#', '#.#.#.#.#', '##..#..##', '#...#...#'],
+  espV:   ['#.#.....#', '#.#.....#', '###.....#', '#.#....##', '#########', '#.#....##', '###.....#', '#.#.....#', '#.#.....#'],
+  flipH:  ['...#.#...', '..##.##..', '.###.###.', '####.####', '.###.###.', '..##.##..', '...#.#...', '.........', '...#.#...'],
+  flipV:  ['.........', '...#.....', '..###....', '.#####...', '#######..', '.........', '#######..', '.#####...', '..###....'],
+  rot:    ['..#####..', '.#.....#.', '#.......#', '#......##', '#.....###', '#........', '.#.......', '..#.....#', '...#####.'],
+};
+function iconaSVG(m) {
+  const rects = []; m.forEach((f, r) => [...f].forEach((v, c) => { if (v === '#') rects.push(`<rect x="${c}" y="${r}" width="1" height="1"/>`); }));
+  return `<svg viewBox="0 0 9 9" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true">${rects.join('')}</svg>`;
+}
+const FERRAMENTAS = [
+  ['lapis', 'lapis', 'B'], ['goma', 'goma', 'E'], ['linha', 'liña', 'L'], ['rect', 'rect.', 'R'], ['elipse', 'elipse', 'O'],
+  ['cubo', 'cubo', 'F'], ['sel', 'selec.', 'S'], ['mover', 'mover', 'M'], ['imaxe', 'imaxe', 'I'],
+];
+const PISTAS = {
+  lapis: 'Clic/arrastra: pinta · botón dereito: borra · Maiús+clic: liña dende a última cela',
+  goma: 'Clic/arrastra: borra', linha: 'Arrastra: liña recta de 1 cela · botón dereito: borra',
+  rect: 'Arrastra: contorno · Maiús: cheo · botón dereito: borra', elipse: 'Arrastra: aro de 1 cela · Maiús: chea · botón dereito: borra',
+  cubo: 'Clic: enche a zona · botón dereito: baleira a zona de tinta', sel: 'Arrastra: selecciona · arrastra dentro: levanta e move · Intro: fixa · Supr: borra',
+  mover: 'Arrastra: move todo o debuxo (ou a peza flotante)', imaxe: 'Arrastra: move a imaxe de fondo · roda: escala · frechas: axuste',
+};
+(function construirFerramentas() {
+  const nav = $('#ferramentas'); let html = '';
+  for (const [id, etq, tecla] of FERRAMENTAS) html += `<button class="fer" data-tool="${id}" title="${etq} (${tecla})">${iconaSVG(ICONAS[id])}<span>${etq}</span></button>`;
+  html += '<hr>';
+  html += `<button class="fer" id="t-espH" title="Espello horizontal (X): o que pintas repítese ao outro lado do eixe vertical">${iconaSVG(ICONAS.espH)}<span>esp. ↔</span></button>`;
+  html += `<button class="fer" id="t-espV" title="Espello vertical (Y)">${iconaSVG(ICONAS.espV)}<span>esp. ↕</span></button>`;
+  html += '<hr>';
+  html += `<button class="fer" data-tr="flipH" title="Voltear horizontal (selección, peza flotante ou todo)">${iconaSVG(ICONAS.flipH)}<span>voltear</span></button>`;
+  html += `<button class="fer" data-tr="flipV" title="Voltear vertical">${iconaSVG(ICONAS.flipV)}<span>voltear</span></button>`;
+  html += `<button class="fer" data-tr="rot" title="Xirar 90° (a grella xira con el se é todo o debuxo)">${iconaSVG(ICONAS.rot)}<span>xirar</span></button>`;
+  nav.innerHTML = html;
+  nav.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.tool) setTool(b.dataset.tool);
+    else if (b.dataset.tr) transformar(b.dataset.tr);
+    else if (b.id === 't-espH') toggleMirror('H');
+    else if (b.id === 't-espV') toggleMirror('V');
+  });
+})();
+function setTool(t) {
+  S.tool = t;
+  $$('#ferramentas .fer[data-tool]').forEach(b => b.classList.toggle('activa', b.dataset.tool === t));
+  cv.className = t === 'mover' ? 'mover' : t === 'sel' ? 'sel' : t === 'imaxe' ? 'imaxe' : '';
+  if (t !== 'sel' && t !== 'mover' && S.floating) anchorFloating();
+  $('#s-pista').textContent = PISTAS[t] || ''; autosave();
+}
+function toggleMirror(eixe) {
+  if (eixe === 'H') S.mirrorH = !S.mirrorH; else S.mirrorV = !S.mirrorV;
+  $('#t-espH').classList.toggle('on', S.mirrorH); $('#t-espV').classList.toggle('on', S.mirrorV);
+  render(); autosave();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Paneis: grella, imaxe, limiar
+// ═══════════════════════════════════════════════════════════════════════
+function setZoom(z) { S.zoom = clamp(Math.round(z), 3, 80); $('#g-zoom').value = S.zoom; $('#g-zoom-v').textContent = S.zoom + ' px'; render(); estado(); autosave(); }
+function axustarZoom() {
+  const b = wrap.getBoundingClientRect(), z = Math.floor(Math.min((b.width - 60) / S.W, (b.height - 60) / S.H));
+  setZoom(z);
+}
+function syncGrella() {
+  $('#g-w').value = S.W; $('#g-h').value = S.H; $('#g-tam').textContent = `${S.W}×${S.H}`;
+  $('#g-zoom').value = S.zoom; $('#g-zoom-v').textContent = S.zoom + ' px';
+  $('#g-trat').value = S.trat; $('#g-alpha').value = Math.round(S.inkAlpha * 100); $('#g-alpha-v').textContent = Math.round(S.inkAlpha * 100) + ' %';
+  $('#g-grid').checked = S.grid; $('#g-guia').value = S.guia; $('#g-caixa').checked = S.caixa; $('#g-caixa-w').value = S.caixaW; $('#g-caixa-h').value = S.caixaH;
+  $('#nome').value = S.nome;
+  $('#t-espH').classList.toggle('on', S.mirrorH); $('#t-espV').classList.toggle('on', S.mirrorV);
+}
+function syncImaxe() {
+  const I = S.img, hai = !!I.el;
+  $('#i-alpha').value = Math.round(I.alpha * 100); $('#i-alpha-v').textContent = Math.round(I.alpha * 100) + ' %';
+  $('#i-x').value = hai ? I.x.toFixed(2) : ''; $('#i-y').value = hai ? I.y.toFixed(2) : ''; $('#i-w').value = hai ? I.w.toFixed(2) : '';
+  $('#i-visible').checked = I.visible; $('#i-flip').checked = I.flip; $('#i-lock').checked = I.locked;
+  $('#l-on').checked = S.limiar.on; $('#l-valor').value = S.limiar.valor; $('#l-valor-v').textContent = S.limiar.valor; $('#l-inv').checked = S.limiar.inverter; $('#l-modo').value = S.limiar.modo;
+}
+$('#g-w').addEventListener('change', e => resize(+e.target.value, S.H, 0, 0));
+$('#g-h').addEventListener('change', e => resize(S.W, +e.target.value, 0, 0));
+$('#presets').addEventListener('click', e => { const b = e.target.closest('button[data-wh]'); if (!b) return; const [w, h] = b.dataset.wh.split(',').map(Number); resize(w, h, 0, 0); });
+document.querySelector('.cruz').addEventListener('click', e => {
+  const b = e.target.closest('button[data-r]'); if (!b) return;
+  const [op, lado] = b.dataset.r.split(','), d = op === '+' ? 1 : -1;
+  if (lado === 'arriba') resize(S.W, S.H + d, 0, d);
+  else if (lado === 'abaixo') resize(S.W, S.H + d, 0, 0);
+  else if (lado === 'esq') resize(S.W + d, S.H, d, 0);
+  else resize(S.W + d, S.H, 0, 0);
+});
+$('#b-recortar').onclick = recortar; $('#b-centrar').onclick = centrar;
+$('#g-zoom').addEventListener('input', e => setZoom(+e.target.value)); $('#b-axustar-zoom').onclick = axustarZoom;
+$('#g-trat').addEventListener('change', e => { S.trat = e.target.value; render(); renderPrevias(); autosave(); });
+$('#g-alpha').addEventListener('input', e => { S.inkAlpha = +e.target.value / 100; $('#g-alpha-v').textContent = e.target.value + ' %'; render(); autosave(); });
+$('#g-grid').addEventListener('change', e => { S.grid = e.target.checked; render(); autosave(); });
+$('#g-guia').addEventListener('change', e => { S.guia = clamp(+e.target.value || 0, 0, 64); render(); autosave(); });
+$('#g-caixa').addEventListener('change', e => { S.caixa = e.target.checked; render(); autosave(); });
+$('#g-caixa-w').addEventListener('change', e => { S.caixaW = clamp(+e.target.value || 1, 1, 256); render(); autosave(); });
+$('#g-caixa-h').addEventListener('change', e => { S.caixaH = clamp(+e.target.value || 1, 1, 256); render(); autosave(); });
+$('#nome').addEventListener('input', e => { S.nome = e.target.value.trim() || 'elemento'; autosave(); });
+
+$('#b-img-cargar').onclick = () => $('#ficheiro-img').click();
+$('#ficheiro-img').addEventListener('change', e => { if (e.target.files[0]) loadImageFile(e.target.files[0]); e.target.value = ''; });
+$('#b-img-quitar').onclick = () => { S.img.el = null; S.img.src = null; imgSample = null; limiarM = null; S.limiar.on = false; syncImaxe(); render(); autosave(); };
+$('#i-alpha').addEventListener('input', e => { S.img.alpha = +e.target.value / 100; $('#i-alpha-v').textContent = e.target.value + ' %'; render(); autosave(); });
+for (const [id, k] of [['i-x', 'x'], ['i-y', 'y'], ['i-w', 'w']])
+  $('#' + id).addEventListener('change', e => { const v = parseFloat(e.target.value); if (isFinite(v) && (k !== 'w' || v > 0)) { S.img[k] = v; limiarM = null; render(); autosave(); } });
+$('#b-img-axustar').onclick = () => { fitImage(); syncImaxe(); render(); autosave(); };
+$('#b-img-centrar').onclick = () => { centerImage(); syncImaxe(); render(); autosave(); };
+$('#b-img-1a1').onclick = () => { if (!S.img.el) return; S.img.w = S.img.natW; S.img.x = 0; S.img.y = 0; limiarM = null; syncImaxe(); render(); autosave(); };
+$('#i-visible').addEventListener('change', e => { S.img.visible = e.target.checked; render(); autosave(); });
+$('#i-flip').addEventListener('change', e => { S.img.flip = e.target.checked; limiarM = null; render(); autosave(); });
+$('#i-lock').addEventListener('change', e => { S.img.locked = e.target.checked; autosave(); });
+$('#l-on').addEventListener('change', e => { S.limiar.on = e.target.checked; if (S.limiar.on && !S.img.el) { aviso('Primeiro carga unha imaxe de fondo'); } render(); autosave(); });
+$('#l-valor').addEventListener('input', e => { S.limiar.valor = +e.target.value; $('#l-valor-v').textContent = e.target.value; limiarM = null; render(); autosave(); });
+$('#l-inv').addEventListener('change', e => { S.limiar.inverter = e.target.checked; limiarM = null; render(); autosave(); });
+$('#l-modo').addEventListener('change', e => { S.limiar.modo = e.target.value; autosave(); });
+$('#b-l-aplicar').onclick = aplicarLimiar;
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Exportar: contornos coma _xerar_logo.contornos() (mesma orde → mesmo SVG)
+// ═══════════════════════════════════════════════════════════════════════
+function contornos(cheas) {           // cheas: [[r,c],...] en orde de fila
+  const ar = new Map(), key = (a, b) => a[0] + ',' + a[1] + '>' + b[0] + ',' + b[1];
+  for (const [r, c] of cheas) {
+    const pts = [[c, r], [c + 1, r], [c + 1, r + 1], [c, r + 1]];
+    for (let i = 0; i < 4; i++) { const a = pts[i], b = pts[(i + 1) % 4], kb = key(b, a); if (ar.has(kb)) ar.delete(kb); else ar.set(key(a, b), [a, b]); }
+  }
+  const saidas = new Map();
+  for (const [a, b] of ar.values()) { const k = a[0] + ',' + a[1]; if (!saidas.has(k)) saidas.set(k, []); saidas.get(k).push(b); }
+  const loops = [];
+  while (saidas.size) {
+    const inicioK = saidas.keys().next().value, inicio = inicioK.split(',').map(Number), loop = [inicio];
+    let pk = inicioK;
+    for (;;) {
+      const seg = saidas.get(pk); if (!seg || !seg.length) break;
+      const q = seg.pop(); if (!seg.length) saidas.delete(pk);
+      const qk = q[0] + ',' + q[1]; if (qk === inicioK) break;
+      loop.push(q); pk = qk;
+    }
+    if (loop.length >= 4) loops.push(simplificar(loop));
+  }
+  return loops;
+}
+function simplificar(loop) {
+  const out = [], n = loop.length;
+  for (let i = 0; i < n; i++) {
+    const [ax, ay] = loop[(i - 1 + n) % n], [bx, by] = loop[i], [cx, cy] = loop[(i + 1) % n];
+    if ((bx - ax) * (cy - by) !== (by - ay) * (cx - bx)) out.push([bx, by]);
+  }
+  return out;
+}
+function matrizExport() {          // {W,H,cells} recortada ou enteira
+  if (!$('#e-recortar').checked) return { W: S.W, H: S.H, cells: S.cells };
+  const b = bbox(); if (!b) return { W: S.W, H: S.H, cells: S.cells };
+  const cells = new Uint8Array(b.w * b.h);
+  for (let r = 0; r < b.h; r++) for (let c = 0; c < b.w; c++) cells[r * b.w + c] = S.cells[idx(b.x0 + c, b.y0 + r)];
+  return { W: b.w, H: b.h, cells };
+}
+function svgString(trat) {
+  const m = matrizExport(), cheas = [];
+  for (let r = 0; r < m.H; r++) for (let c = 0; c < m.W; c++) if (m.cells[r * m.W + c]) cheas.push([r, c]);
+  let loops = contornos(cheas), w = m.W, h = m.H, cor = { magenta: MAG, tinta: TINTA, papel: PAPEL, bloque: PAPEL }[trat], rect = '';
+  if (trat === 'bloque') { loops = loops.map(l => l.map(([x, y]) => [x + ZONA, y + ZONA])); w += 2 * ZONA; h += 2 * ZONA; rect = `\n  <rect width="${w}" height="${h}" fill="${MAG}"/>`; }
+  const d = loops.map(l => 'M ' + l.map(([x, y]) => `${x} ${y}`).join(' L ') + ' Z').join(' ');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w * 16}" height="${h * 16}" role="img" aria-label="Xente de Fóra">${rect}\n  <path fill="${cor}" fill-rule="evenodd" d="${d}"/>\n</svg>\n`;
+}
+const nomeFicheiro = () => (S.nome || 'elemento').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'elemento';
+function download(nome, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+async function copiar(texto, que) {
+  try { await navigator.clipboard.writeText(texto); aviso(que + ' copiado'); }
+  catch { const ta = $('#e-mat'), old = ta.value; ta.value = texto; ta.select(); document.execCommand('copy'); ta.value = old; aviso(que + ' copiado'); }
+}
+$('#b-svg').onclick = () => { const t = $('#e-svg-trat').value, suf = t === 'magenta' ? '' : '_' + t; download(nomeFicheiro() + suf + '.svg', new Blob([svgString(t)], { type: 'image/svg+xml' })); };
+$('#b-svg-copiar').onclick = () => copiar(svgString($('#e-svg-trat').value), 'SVG');
+$('#b-png').onclick = () => {
+  const m = matrizExport(), px = +$('#e-png-cela').value, f = $('#e-png-fondo').value, marxe = $('#e-png-zona').checked ? ZONA : 0;
+  const T = f === 'transparente' ? { ink: MAG, bg: null } : TRATS[f];
+  const oc = document.createElement('canvas'); oc.width = (m.W + 2 * marxe) * px; oc.height = (m.H + 2 * marxe) * px;
+  const o = oc.getContext('2d');
+  if (T.bg) { o.fillStyle = T.bg; o.fillRect(0, 0, oc.width, oc.height); }
+  o.fillStyle = T.ink;
+  for (let r = 0; r < m.H; r++) for (let c = 0; c < m.W; c++) if (m.cells[r * m.W + c]) o.fillRect((c + marxe) * px, (r + marxe) * px, px, px);
+  oc.toBlob(b => download(`${nomeFicheiro()}_${oc.width}x${oc.height}.png`, b), 'image/png');
+};
+function matrizPython() {
+  const m = matrizExport(), nome = (S.nome || 'elemento').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'ELEMENTO';
+  const filas = []; for (let r = 0; r < m.H; r++) { let s = ''; for (let c = 0; c < m.W; c++) s += m.cells[r * m.W + c] ? '#' : '.'; filas.push(`    "${s}",`); }
+  return `${nome} = M(\n${filas.join('\n')}\n)\n`;
+}
+$('#b-mat-xerar').onclick = () => { $('#e-mat').value = matrizPython(); };
+$('#b-mat-copiar').onclick = () => copiar(matrizPython(), 'Matriz');
+$('#b-mat-importar').onclick = () => { const m = parseMatriz($('#e-mat').value); if (!m) return aviso('Non atopo filas de celas no cadro'); loadDrawing(m, S.nome); };
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Importar: matriz de texto, SVG, PNG, JSON
+// ═══════════════════════════════════════════════════════════════════════
+function parseMatriz(txt) {
+  let rows = [...txt.matchAll(/["']([.#·█ ]*[#█][.#·█ ]*)["']/g)].map(m => m[1]);
+  if (!rows.length) rows = txt.split(/\r?\n/).map(l => l.replace(/[,\s]+$/, '')).filter(l => /^[.#·█ ]+$/.test(l) && /[#█]/.test(l) || /^[.·]+$/.test(l));
+  if (!rows.length) return null;
+  const dobre = rows.some(r => /[█·]/.test(r));
+  const norm = rows.map(r => { if (dobre) { let s = ''; for (let i = 0; i < r.length; i += 2) s += r[i] === '█' || r[i] === '#' ? '#' : '.'; return s; } return r.replace(/[^#]/g, '.'); });
+  const W = Math.max(...norm.map(r => r.length)), H = norm.length; if (W < 1 || W > 256 || H > 256) return null;
+  const cells = new Uint8Array(W * H); norm.forEach((r, y) => [...r].forEach((v, x) => { if (v === '#') cells[y * W + x] = 1; }));
+  return { W, H, cells };
+}
+function pathToLoops(d) {
+  const toks = d.match(/[MmLlHhVvZzCcSsQqTtAa]|-?\d*\.?\d+(?:e[-+]?\d+)?/g) || [];
+  const loops = []; let cur = [], x = 0, y = 0, sx = 0, sy = 0, cmd = '', i = 0;
+  const num = () => parseFloat(toks[i++]);
+  const close = () => { if (cur.length >= 3) loops.push(cur); cur = []; };
+  const bez = (pts) => { const [x0, y0] = [x, y]; for (let t = 1; t <= 8; t++) { const s = t / 8, u = 1 - s; let px, py; if (pts.length === 3) { px = u * u * x0 + 2 * u * s * pts[0][0] + s * s * pts[1][0]; py = u * u * y0 + 2 * u * s * pts[0][1] + s * s * pts[1][1]; } else { px = u * u * u * x0 + 3 * u * u * s * pts[0][0] + 3 * u * s * s * pts[1][0] + s * s * s * pts[2][0]; py = u * u * u * y0 + 3 * u * u * s * pts[0][1] + 3 * u * s * s * pts[1][1] + s * s * s * pts[2][1]; } cur.push([px, py]); } x = pts[pts.length - 1][0]; y = pts[pts.length - 1][1]; };
+  while (i < toks.length) {
+    if (/[A-Za-z]/.test(toks[i])) cmd = toks[i++];
+    const rel = cmd === cmd.toLowerCase(), C = cmd.toUpperCase();
+    if (C === 'Z') { close(); x = sx; y = sy; if (i < toks.length && !/[A-Za-z]/.test(toks[i])) cmd = 'L'; continue; }
+    if (C === 'M') { close(); x = num() + (rel ? x : 0); y = num() + (rel ? y : 0); sx = x; sy = y; cur.push([x, y]); cmd = rel ? 'l' : 'L'; continue; }
+    if (C === 'L') { x = num() + (rel ? x : 0); y = num() + (rel ? y : 0); cur.push([x, y]); continue; }
+    if (C === 'H') { x = num() + (rel ? x : 0); cur.push([x, y]); continue; }
+    if (C === 'V') { y = num() + (rel ? y : 0); cur.push([x, y]); continue; }
+    if (C === 'C') { const p = []; for (let k = 0; k < 3; k++) { const px = num() + (rel ? x : 0), py = num() + (rel ? y : 0); p.push([px, py]); } bez(p); continue; }
+    if (C === 'S' || C === 'Q') { const p = []; for (let k = 0; k < 2; k++) { const px = num() + (rel ? x : 0), py = num() + (rel ? y : 0); p.push([px, py]); } bez(C === 'Q' ? p : [p[0], p[0], p[1]]); continue; }
+    if (C === 'T') { x = num() + (rel ? x : 0); y = num() + (rel ? y : 0); cur.push([x, y]); continue; }
+    if (C === 'A') { i += 5; x = num() + (rel ? x : 0); y = num() + (rel ? y : 0); cur.push([x, y]); continue; }
+    i++;
+  }
+  close();
+  return loops;
+}
+function dentro(loops, px, py, evenodd) {
+  let n = 0, wn = 0;
+  for (const lp of loops) for (let i = 0; i < lp.length; i++) {
+    const [x0, y0] = lp[i], [x1, y1] = lp[(i + 1) % lp.length];
+    if ((y0 > py) !== (y1 > py) && x0 + (py - y0) * (x1 - x0) / (y1 - y0) > px) { n++; wn += y1 > y0 ? 1 : -1; }
+  }
+  return evenodd ? n % 2 === 1 : wn !== 0;
+}
+function parseSVG(txt) {
+  const doc = new DOMParser().parseFromString(txt, 'image/svg+xml'), svg = doc.documentElement;
+  if (svg.nodeName !== 'svg') throw new Error('Non é un SVG');
+  let minx = 0, miny = 0, w, h; const vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
+  if (vb.length === 4 && vb.every(isFinite)) [minx, miny, w, h] = vb; else { w = parseFloat(svg.getAttribute('width')); h = parseFloat(svg.getAttribute('height')); }
+  const W = Math.round(w), H = Math.round(h);
+  if (!(W > 0 && H > 0 && W <= 256 && H <= 256)) throw new Error(`viewBox ${w}×${h}: só ata 256 celas de lado (1 unidade = 1 cela)`);
+  const cells = new Uint8Array(W * H), fillNone = el => (el.getAttribute('fill') || '').toLowerCase() === 'none';
+  const mark = (loops, evenodd) => { for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (!cells[r * W + c] && dentro(loops, minx + c + .5, miny + r + .5, evenodd)) cells[r * W + c] = 1; };
+  for (const p of svg.querySelectorAll('path')) { if (fillNone(p)) continue; const lp = pathToLoops(p.getAttribute('d') || ''); if (lp.length) mark(lp, (p.getAttribute('fill-rule') || 'nonzero') === 'evenodd'); }
+  for (const rc of svg.querySelectorAll('rect')) {
+    if (fillNone(rc)) continue; const x = +rc.getAttribute('x') || 0, y = +rc.getAttribute('y') || 0, rw = +rc.getAttribute('width'), rh = +rc.getAttribute('height');
+    if (x <= minx && y <= miny && rw >= w && rh >= h) continue;   // fondo de bloque: non é tinta
+    mark([[[x, y], [x + rw, y], [x + rw, y + rh], [x, y + rh]]], true);
+  }
+  for (const pg of svg.querySelectorAll('polygon')) { if (fillNone(pg)) continue; const ns = (pg.getAttribute('points') || '').trim().split(/[\s,]+/).map(Number), lp = []; for (let k = 0; k + 1 < ns.length; k += 2) lp.push([ns[k], ns[k + 1]]); if (lp.length >= 3) mark([lp], true); }
+  return { W, H, cells };
+}
+function loadDrawing(m, nome) {
+  if (S.floating) anchorFloating(false);
+  push();
+  S.W = m.W; S.H = m.H; S.cells = m.cells.slice(); S.sel = null; limiarM = null;
+  if (nome) { S.nome = nome.replace(/\.[^.]+$/, '').replace(/_(tinta|papel|bloque|bn_negro|bn_branco)$/, ''); }
+  commit();
+}
+function pngToDrawing(file) {
+  const im = new Image();
+  im.onload = () => {
+    URL.revokeObjectURL(im.src);
+    const px = clamp(+$('#png-cela').value || 16, 1, 256), W = Math.floor(im.naturalWidth / px), H = Math.floor(im.naturalHeight / px);
+    if (W < 1 || H < 1 || W > 256 || H > 256) return aviso(`Con ${px} px/cela saen ${W}×${H} celas; axusta a cela`);
+    const oc = document.createElement('canvas'); oc.width = im.naturalWidth; oc.height = im.naturalHeight;
+    const o = oc.getContext('2d'); o.drawImage(im, 0, 0); const d = o.getImageData(0, 0, oc.width, oc.height).data;
+    let conAlpha = false; for (let i = 3; i < d.length; i += 4) if (d[i] < 128) { conAlpha = true; break; }
+    const inv = $('#png-inv').checked, cells = new Uint8Array(W * H);
+    for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+      const o4 = ((Math.floor(r * px + px / 2)) * oc.width + Math.floor(c * px + px / 2)) * 4;
+      let ink = conAlpha ? d[o4 + 3] >= 128 : (.2126 * d[o4] + .7152 * d[o4 + 1] + .0722 * d[o4 + 2]) < 128;
+      if (inv) ink = !ink; cells[r * W + c] = ink ? 1 : 0;
+    }
+    loadDrawing({ W, H, cells }, file.name.replace(/_\d+x\d+$/, ''));
+    aviso(`${W}×${H} celas lidas (${conAlpha ? 'pola transparencia' : 'pola luminosidade'})`);
+  };
+  im.src = URL.createObjectURL(file);
+}
+$('#b-png-debuxo').onclick = () => $('#ficheiro-png').click();
+$('#ficheiro-png').addEventListener('change', e => { if (e.target.files[0]) pngToDrawing(e.target.files[0]); e.target.value = ''; });
+
+function abrirFicheiro(f) {
+  const n = f.name.toLowerCase();
+  if (n.endsWith('.json')) f.text().then(t => { try { cargarProxecto(JSON.parse(t)); aviso('Proxecto cargado'); } catch (e) { aviso('JSON non válido: ' + e.message); } });
+  else if (n.endsWith('.svg')) f.text().then(t => { try { loadDrawing(parseSVG(t), f.name); aviso(`${S.W}×${S.H} celas`); } catch (e) { aviso(e.message); } });
+  else if (/\.(png|jpe?g|gif|webp|bmp|avif)$/.test(n)) loadImageFile(f);
+  else f.text().then(t => { const m = parseMatriz(t); if (m) loadDrawing(m, f.name); else aviso('Non atopo unha matriz nese ficheiro'); });
+}
+$('#b-abrir').onclick = () => $('#ficheiro').click();
+$('#ficheiro').addEventListener('change', e => { for (const f of e.target.files) abrirFicheiro(f); e.target.value = ''; });
+$('#b-novo').onclick = () => { if (S.floating) { S.floating = null; } push(); S.cells.fill(0); S.sel = null; commit(); };
+$('#b-desfacer').onclick = undo; $('#b-refacer').onclick = redo;
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Proxecto (.json) e autogardado
+// ═══════════════════════════════════════════════════════════════════════
+function filasDe(cells, W, H) { const out = []; for (let r = 0; r < H; r++) { let s = ''; for (let c = 0; c < W; c++) s += cells[r * W + c] ? '#' : '.'; out.push(s); } return out; }
+function serializar(conImaxe) {
+  const I = S.img;
+  return {
+    app: 'xentedefora-editor-pixel', v: 1, nome: S.nome, W: S.W, H: S.H, filas: filasDe(S.cells, S.W, S.H),
+    axustes: { zoom: S.zoom, trat: S.trat, guia: S.guia, caixa: S.caixa, caixaW: S.caixaW, caixaH: S.caixaH, grid: S.grid, mirrorH: S.mirrorH, mirrorV: S.mirrorV, inkAlpha: S.inkAlpha, tool: S.tool },
+    limiar: { ...S.limiar },
+    img: I.el ? { src: conImaxe ? I.src : null, x: I.x, y: I.y, w: I.w, alpha: I.alpha, visible: I.visible, locked: I.locked, flip: I.flip } : null,
+  };
+}
+function cargarProxecto(p) {
+  if (!p || !Array.isArray(p.filas)) throw new Error('sen filas');
+  const m = parseMatriz(p.filas.map(f => `"${f}"`).join('\n')) || { W: 1, H: 1, cells: new Uint8Array(1) };
+  m.W = Math.max(...p.filas.map(f => f.length)) || m.W;
+  if (S.floating) S.floating = null;
+  push();
+  S.W = m.W; S.H = m.H; S.cells = m.cells; S.nome = p.nome || 'elemento'; S.sel = null;
+  Object.assign(S, p.axustes || {}); if (p.limiar) Object.assign(S.limiar, p.limiar);
+  if (p.img) { Object.assign(S.img, { x: p.img.x, y: p.img.y, w: p.img.w, alpha: p.img.alpha ?? .5, visible: p.img.visible ?? true, locked: !!p.img.locked, flip: !!p.img.flip }); if (p.img.src) setImage(p.img.src, true); }
+  setTool(S.tool || 'lapis'); syncImaxe(); commit();
+}
+function gardarJSON() { download(nomeFicheiro() + '.xdf.json', new Blob([JSON.stringify(serializar(true))], { type: 'application/json' })); }
+$('#b-gardar').onclick = gardarJSON;
+let autosaveT = 0;
+function autosave() {
+  clearTimeout(autosaveT);
+  autosaveT = setTimeout(() => {
+    try { localStorage.setItem('xdf_editor_pixel_v1', JSON.stringify(serializar(!!(S.img.src && S.img.src.length < 2.5e6)))); } catch (e) { /* cheo: ignorar */ }
+  }, 300);
+}
+function restaurar() {
+  try {
+    const p = JSON.parse(localStorage.getItem('xdf_editor_pixel_v1') || 'null'); if (!p) return false;
+    cargarProxecto(p); history.length = 0; return true;
+  } catch { return false; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Biblioteca
+// ═══════════════════════════════════════════════════════════════════════
+const BIB = window.XDF_BIBLIOTECA || null;
+function itemMatriz(it) { const W = Math.max(...it.filas.map(f => f.length)), H = it.filas.length, cells = new Uint8Array(W * H); it.filas.forEach((f, r) => [...f].forEach((v, c) => { if (v === '#') cells[r * W + c] = 1; })); return { W, H, cells }; }
+function renderBiblioteca(filtro = '') {
+  const cont = $('#bib'); cont.innerHTML = '';
+  if (!BIB) { cont.innerHTML = '<div class="nota">Falta <b>editor_biblioteca.js</b>. Xérao con:<br><code>uv run --no-project python _editor_biblioteca.py</code><br>e recarga a páxina. Tamén podes engadir SVG soltos co botón de arriba.</div>'; return; }
+  const q = filtro.trim().toLowerCase();
+  for (const g of BIB.grupos) {
+    const items = g.items.filter(it => !q || it.nome.toLowerCase().includes(q) || g.nome.toLowerCase().includes(q));
+    if (!items.length) continue;
+    const det = document.createElement('details'); det.className = 'bib-grupo'; det.open = !!q || g.items.length <= 12 || g.nome === 'Pictogramas';
+    det.innerHTML = `<summary>${g.nome} <span class="sec">(${items.length})</span></summary><div class="bib-items"></div>`;
+    const box = det.querySelector('.bib-items');
+    for (const it of items) {
+      const m = itemMatriz(it), el = document.createElement('div'); el.className = 'bib-item'; el.title = (it.nota || it.nome) + ` · ${m.W}×${m.H}`;
+      const c = document.createElement('canvas'); const px = Math.max(1, Math.floor(56 / Math.max(m.W, m.H))); c.width = 56; c.height = 56;
+      const o = c.getContext('2d'); o.fillStyle = MAG; const ox = Math.floor((56 - m.W * px) / 2), oy = Math.floor((56 - m.H * px) / 2);
+      for (let r = 0; r < m.H; r++) for (let x = 0; x < m.W; x++) if (m.cells[r * m.W + x]) o.fillRect(ox + x * px, oy + r * px, px, px);
+      el.appendChild(c); const sp = document.createElement('span'); sp.textContent = it.nome; el.appendChild(sp);
+      el.addEventListener('click', e => {
+        const modo = document.querySelector('input[name=bib-modo]:checked').value, estampar = (modo === 'estampar') !== e.shiftKey;
+        if (estampar) pasteFloating({ w: m.W, h: m.H, cells: m.cells }, hover || (S.sel ? { c: S.sel.x0, r: S.sel.y0 } : { c: 0, r: 0 }));
+        else { loadDrawing(m, it.nome.length === 1 ? 'letra_' + it.nome : it.nome); aviso(`${it.nome} · ${m.W}×${m.H} celas`); }
+      });
+      box.appendChild(el);
+    }
+    cont.appendChild(det);
+  }
+  if (!cont.children.length) cont.innerHTML = '<div class="sec pequeno">Nada con ese nome.</div>';
+}
+$('#bib-busca').addEventListener('input', e => renderBiblioteca(e.target.value));
+$('#b-bib-engadir').onclick = () => $('#ficheiro-bib').click();
+$('#ficheiro-bib').addEventListener('change', async e => {
+  if (!BIB) window.XDF_BIBLIOTECA = null;
+  const grupo = (BIB || (window.XDF_BIBLIOTECA = { grupos: [] })).grupos.find(g => g.nome === 'Cargados') || (() => { const g = { nome: 'Cargados', items: [] }; (BIB || window.XDF_BIBLIOTECA).grupos.unshift(g); return g; })();
+  for (const f of e.target.files) { try { const m = parseSVG(await f.text()); grupo.items.push({ nome: f.name.replace(/\.svg$/i, ''), filas: filasDe(m.cells, m.W, m.H) }); } catch (err) { aviso(f.name + ': ' + err.message); } }
+  e.target.value = ''; renderBiblioteca($('#bib-busca').value); $('#bib').closest('details').open = true;
+});
+if (BIB && BIB.fonte_woff2) {
+  const st = document.createElement('style'); st.textContent = `@font-face{font-family:'Puntos';src:url(data:font/woff2;base64,${BIB.fonte_woff2}) format('woff2')}`; document.head.appendChild(st);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Vista previa e barra de estado
+// ═══════════════════════════════════════════════════════════════════════
+function renderPrevias() {
+  const cont = $('#previas'); cont.innerHTML = '';
+  const b = bbox(); if (!b) { cont.innerHTML = '<span class="sec pequeno">Sen tinta aínda.</span>'; return; }
+  const fig = (px, trat, etq, marxe) => {
+    const T = TRATS[trat], c = document.createElement('canvas'); c.width = (b.w + 2 * marxe) * px; c.height = (b.h + 2 * marxe) * px;
+    c.style.width = c.width + 'px'; c.style.height = c.height + 'px';
+    const o = c.getContext('2d'); o.fillStyle = T.bg; o.fillRect(0, 0, c.width, c.height); o.fillStyle = T.ink;
+    for (let r = 0; r < b.h; r++) for (let x = 0; x < b.w; x++) if (S.cells[idx(b.x0 + x, b.y0 + r)]) o.fillRect((x + marxe) * px, (r + marxe) * px, px, px);
+    const f = document.createElement('figure'); f.appendChild(c); const cap = document.createElement('figcaption'); cap.textContent = etq; f.appendChild(cap); return f;
+  };
+  const px = Math.max(1, Math.min(6, Math.floor(96 / Math.max(b.w, b.h))));
+  for (const [t, e] of [['magenta', 'magenta'], ['tinta', '_tinta'], ['negativo', '_papel'], ['bloque', '_bloque']]) cont.appendChild(fig(px, t, e, t === 'bloque' ? ZONA : 1));
+  for (const k of [1, 2, 3]) cont.appendChild(fig(k, 'magenta', `${k} px/cela`, 1));
+}
+function estado() {
+  $('#s-cela').textContent = hover ? `cela ${hover.c}, ${hover.r}` : '—';
+  $('#s-grella').textContent = `grella ${S.W}×${S.H} · zoom ${S.zoom} px`;
+  const b = bbox(); $('#s-tinta').textContent = `tinta ${countInk()} celas` + (b ? ` · caixa ${b.w}×${b.h}` : '') + (S.sel ? ` · selección ${S.sel.x1 - S.sel.x0 + 1}×${S.sel.y1 - S.sel.y0 + 1}` : '') + (S.floating ? ` · peza flotante ${S.floating.w}×${S.floating.h}` : '');
+  $('#b-desfacer').disabled = !history.length; $('#b-refacer').disabled = !future.length;
+}
+let toastT = 0;
+function aviso(msg) { $('#toast').textContent = msg; clearTimeout(toastT); toastT = setTimeout(() => { $('#toast').textContent = ''; }, 3500); }
+function pista(msg) { $('#s-pista').textContent = msg; }
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Arranque
+// ═══════════════════════════════════════════════════════════════════════
+renderBiblioteca();
+if (!restaurar()) { setTool('lapis'); syncGrella(); syncImaxe(); }
+commit(); axustarZoom();
+window.addEventListener('resize', () => render());
+</script>
+</body>
+</html>
