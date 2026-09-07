@@ -162,6 +162,7 @@ footer #toast{margin-left:auto;color:var(--acento)}
           <span class="sec pequeno">celas</span>
         </div>
         <div class="fila" id="presets">
+          <button class="pequena" data-wh="48,48">48×48</button>
           <button class="pequena" data-wh="16,20">16×20 galiña</button>
           <button class="pequena" data-wh="24,24">24×24</button>
           <button class="pequena" data-wh="16,16">16×16</button>
@@ -390,7 +391,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 //  Estado
 // ═══════════════════════════════════════════════════════════════════════
 const S = {
-  W: 16, H: 20, cells: new Uint8Array(16 * 20), nome: 'elemento',
+  W: 48, H: 48, cells: new Uint8Array(48 * 48), nome: 'elemento',
   zoom: 24, tool: 'lapis', mirrorH: false, mirrorV: false,
   grid: true, guia: 0, caixa: false, caixaW: 16, caixaH: 20,
   trat: 'magenta', inkAlpha: 1,
@@ -1186,12 +1187,12 @@ let autosaveT = 0;
 function autosave() {
   clearTimeout(autosaveT);
   autosaveT = setTimeout(() => {
-    try { localStorage.setItem('xdf_editor_pixel_v1', JSON.stringify(serializar(!!(S.img.src && S.img.src.length < 2.5e6)))); } catch (e) { /* cheo: ignorar */ }
+    try { localStorage.setItem('xdf_editor_pixel_v2', JSON.stringify(serializar(!!(S.img.src && S.img.src.length < 2.5e6)))); } catch (e) { /* cheo: ignorar */ }
   }, 300);
 }
 function restaurar() {
   try {
-    const p = JSON.parse(localStorage.getItem('xdf_editor_pixel_v1') || 'null'); if (!p) return false;
+    const p = JSON.parse(localStorage.getItem('xdf_editor_pixel_v2') || 'null'); if (!p) return false;
     cargarProxecto(p); history.length = 0; return true;
   } catch { return false; }
 }
