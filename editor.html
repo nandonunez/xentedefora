@@ -22,19 +22,19 @@ html,body{height:100%}
 body{margin:0;background:var(--fondo);color:var(--texto);font:13px/1.35 var(--sans);
   display:grid;grid-template-rows:auto 1fr auto;height:100vh;overflow:hidden}
 button,input,select,textarea{font:inherit;color:inherit}
-button{background:var(--superficie);border:1px solid var(--regra);border-radius:4px;padding:4px 8px;cursor:pointer;line-height:1.2}
+button{background:var(--superficie);border:1px solid var(--regra);padding:4px 8px;cursor:pointer;line-height:1.2}
 button:hover{background:var(--superficie-2)}
 button:active{transform:translateY(1px)}
 button.primaria{background:var(--acento);border-color:var(--acento);color:#fff}
 button.primaria:hover{filter:brightness(1.08)}
 button.pequena{padding:2px 6px;font-size:12px}
-input[type=number],input[type=text],select{background:var(--fondo);border:1px solid var(--regra);border-radius:4px;padding:3px 5px;min-width:0}
+input[type=number],input[type=text],select{background:var(--fondo);border:1px solid var(--regra);padding:3px 5px;min-width:0}
 input[type=number]{width:4.6em}
 input[type=range]{accent-color:var(--acento);flex:1;min-width:80px}
 input[type=checkbox],input[type=radio]{accent-color:var(--acento)}
 label{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
-textarea{width:100%;background:var(--fondo);border:1px solid var(--regra);border-radius:4px;padding:6px;font:12px/1.3 var(--mono);resize:vertical}
-kbd{font:11px var(--mono);background:var(--superficie-2);border:1px solid var(--regra);border-radius:3px;padding:0 4px;color:var(--secundario)}
+textarea{width:100%;background:var(--fondo);border:1px solid var(--regra);padding:6px;font:12px/1.3 var(--mono);resize:vertical}
+kbd{font:11px var(--mono);background:var(--superficie-2);border:1px solid var(--regra);padding:0 4px;color:var(--secundario)}
 .mono{font-family:var(--mono)}
 .sec{color:var(--secundario)}
 .pequeno{font-size:11px}
@@ -48,7 +48,7 @@ header .accions{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wr
 main{display:grid;grid-template-columns:76px minmax(0,1fr) 352px;min-height:0}
 
 nav#ferramentas{border-right:1px solid var(--regra);background:var(--fondo);display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:6px 4px;overflow:auto}
-nav#ferramentas .fer{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px 4px;border:1px solid transparent;background:none;border-radius:6px}
+nav#ferramentas .fer{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px 4px;border:1px solid transparent;background:none;}
 nav#ferramentas .fer span{font:10px var(--mono);letter-spacing:.02em;color:var(--secundario)}
 nav#ferramentas .fer svg{width:22px;height:22px;display:block}
 nav#ferramentas .fer:hover{background:var(--superficie)}
@@ -59,7 +59,7 @@ nav#ferramentas hr{border:0;border-top:1px solid var(--regra);margin:4px 6px;wid
 
 #lenzo-wrap{overflow:auto;background:var(--superficie);position:relative;outline:none}
 #lenzo-int{min-width:100%;min-height:100%;width:max-content;display:flex;align-items:center;justify-content:center;padding:28px}
-#lenzo{display:block;image-rendering:pixelated;box-shadow:0 1px 4px rgba(0,0,0,.18);cursor:crosshair;touch-action:none}
+#lenzo{display:block;image-rendering:pixelated;border:1px solid var(--regra);cursor:crosshair;touch-action:none}
 #lenzo.mover{cursor:move}
 #lenzo.sel{cursor:default}
 #lenzo.imaxe{cursor:grab}
@@ -86,7 +86,7 @@ details[open] summary::before{transform:rotate(90deg) translateX(1px)}
 #bib-busca{width:100%}
 .bib-grupo summary{background:none;padding:6px 0;font-size:11px}
 .bib-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:4px;padding-bottom:6px}
-.bib-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;border:1px solid var(--regra);border-radius:4px;background:var(--superficie);cursor:pointer;min-width:0}
+.bib-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;border:1px solid var(--regra);background:var(--superficie);cursor:pointer;min-width:0}
 .bib-item:hover{border-color:var(--acento)}
 .bib-item canvas{width:56px;height:56px;image-rendering:pixelated;background:var(--papel);border:1px solid var(--regra)}
 .bib-item span{font:10px var(--mono);color:var(--secundario);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -100,27 +100,38 @@ footer#estado{display:flex;gap:16px;align-items:center;padding:5px 14px;border-t
 footer#estado b{color:var(--texto);font-weight:400}
 footer #toast{margin-left:auto;color:var(--acento)}
 @media (max-width:1000px){main{grid-template-columns:64px minmax(0,1fr) 300px}}
-/* móbil: ferramentas en fila arriba, lenzo no medio, paneis pregados abaixo */
+/* móbil: cabeceira compacta, ferramentas en fila (só iconas), lenzo enteiro,
+   paneis nunha lámina que se abre e se pecha desde o pé */
 @media (max-width:760px){
   body{height:100dvh}
-  main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto}
-  nav#ferramentas{flex-direction:row;border-right:0;border-bottom:1px solid var(--regra);overflow-x:auto;overflow-y:hidden;padding:4px 6px;gap:4px}
-  nav#ferramentas .fer{flex:none;min-width:52px}
-  nav#ferramentas hr{border-top:0;border-left:1px solid var(--regra);width:0;height:auto;margin:2px 4px;align-self:stretch}
-  aside#paneis{border-left:0;border-top:1px solid var(--regra);max-height:42vh}
-  #lenzo-int{padding:12px}
-  header{gap:8px;padding:6px 10px}
-  header h1{font-size:18px}
-  #nome{width:9em}
-  footer#estado{gap:8px}
+  main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+  header{gap:6px 10px;padding:5px 8px}
+  header h1{font-size:14px}
+  header .sub{display:none}
+  header label.mono{font-size:11px} #nome{width:8em;padding:2px 4px}
+  header .accions{display:flex;gap:4px;margin-left:auto}
+  header .accions button{padding:3px 7px;font-size:11px}
+  nav#ferramentas{flex-direction:row;border-right:0;border-bottom:1px solid var(--regra);overflow-x:auto;overflow-y:hidden;padding:3px 4px;gap:2px}
+  nav#ferramentas .fer{flex:none;min-width:40px;padding:5px 4px}
+  nav#ferramentas .fer span{display:none}
+  nav#ferramentas hr{border-top:0;border-left:1px solid var(--regra);width:0;height:auto;margin:2px 3px;align-self:stretch}
+  #lenzo-int{padding:8px}
+  aside#paneis{display:none;position:fixed;left:0;right:0;bottom:0;max-height:78vh;overflow:auto;border-left:0;border-top:1px solid var(--tinta,var(--regra));z-index:20}
+  body.paneis-abertos aside#paneis{display:block}
+  #paneis-cab{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-bottom:1px solid var(--regra);font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--fondo);position:sticky;top:0}
+  footer#estado{gap:10px;padding:4px 8px;min-height:30px;flex-wrap:nowrap;overflow:hidden}
+  footer#estado #s-cela, footer#estado #s-tinta, footer#estado #s-pista{display:none}
+  footer#estado #s-grella{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #b-paneis{flex:none;padding:3px 8px;font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
 }
+@media (min-width:761px){#paneis-cab,#b-paneis{display:none}}
 </style>
 </head>
 <body>
 
 <header>
   <h1>Editor de píxel</h1>
-  <span class="sub">Xente de Fóra · cada cela é un punto · <a href="manual/" style="color:inherit">manual</a></span>
+  <span class="sub">Xente de Fóra · <a href="manual/" style="color:inherit">manual</a></span>
   <label class="mono pequeno">nome <input id="nome" type="text" value="elemento" spellcheck="false"></label>
   <div class="accions">
     <button id="b-novo" title="Baleira o debuxo (desfacible)">Novo</button>
@@ -1267,12 +1278,27 @@ window.addEventListener('resize', () => render());
 <script>
 (function(){
   var m = window.matchMedia('(max-width:760px)');
+  var aside = document.getElementById('paneis');
+  var pe = document.getElementById('estado');
+  // botón «Paneis» no pé e cabeceira «Pechar» na lámina
+  var b = document.createElement('button'); b.id = 'b-paneis'; b.type = 'button'; b.textContent = 'Paneis';
+  pe.insertBefore(b, pe.firstChild);
+  var cab = document.createElement('div'); cab.id = 'paneis-cab';
+  cab.innerHTML = '<span>Paneis</span><button type="button" id="b-pechar-paneis">Pechar</button>';
+  aside.insertBefore(cab, aside.firstChild);
+  function abrir(on){ document.body.classList.toggle('paneis-abertos', on); b.textContent = on ? 'Lenzo' : 'Paneis'; }
+  b.addEventListener('click', function(){ abrir(!document.body.classList.contains('paneis-abertos')); });
+  cab.querySelector('button').addEventListener('click', function(){ abrir(false); });
   function aplicar(){
-    if (!m.matches) return;
+    if (!m.matches) { abrir(false); return; }
     document.querySelectorAll('#paneis details[open]').forEach(function(d){ d.removeAttribute('open'); });
+    var g = document.getElementById('b-gardar'); if (g) g.textContent = 'Gardar';
+    var a = document.getElementById('b-abrir'); if (a) a.textContent = 'Abrir';
     if (typeof axustarZoom === 'function') setTimeout(axustarZoom, 60);
   }
   if (document.readyState === 'complete') aplicar(); else window.addEventListener('load', aplicar);
+  m.addEventListener('change', aplicar);
+  var t; window.addEventListener('resize', function(){ if (!m.matches) return; clearTimeout(t); t = setTimeout(function(){ if (typeof axustarZoom === 'function') axustarZoom(); }, 200); });
 })();
 </script>
 </body>
