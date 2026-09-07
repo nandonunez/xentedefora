@@ -8,7 +8,7 @@
 - **Pandeireteiras Zóscalle, A Coruña, 2023** — Estevoaei, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Concentraci%C3%B3n_de_Queremos_Galego_no_Obelisco_da_Coru%C3%B1a,_D%C3%ADa_das_Letras_Galegas_2023_-_pandeireteiras_Z%C3%B3scalle.jpg · ficheiro local `fotos/pandeireteiras_zoscalle_2023.jpg`
 
 ## Tipografías
-- Ferreña: alfabeto propio da asociación (imaxe/_alfabeto_pixel.py, _xerar_fonte.py). Licenza pendente de decidir.
+- Puntos (antes Ferreña): alfabeto propio da asociación (imaxe/_alfabeto_pixel.py, _xerar_fonte.py). Licenza libre, SIL OFL 1.1.
 - Bitter (Sol Matas e colaboradores) — SIL Open Font License 1.1 (fonte/OFL-Bitter.txt).
 - Courier Prime (Quote-Unquote Apps) — SIL Open Font License 1.1 (fonte/OFL-CourierPrime.txt).
 
@@ -16,4 +16,4 @@
 - Logotipo da Xunta de Galicia e fondos europeos: dos seus titulares; aparece só como exemplo de colocación.
 
 ## Marca
-- Símbolo, wordmark, Ferreña, elementos e este manual: © Asociación Xente de Fóra.
+- Símbolo, wordmark, Puntos, elementos e este manual: © Asociación Xente de Fóra.
