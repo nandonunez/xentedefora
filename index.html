@@ -98,8 +98,9 @@ figcaption .num{margin-right:8px}
 .fila figure .peza{flex:1;display:flex;align-items:flex-end;min-height:calc(24 * var(--cela-ico))}
 .fila figure .peza>.fondo{align-self:stretch;width:100%;display:flex;align-items:flex-end}
 .fila figure figcaption{margin-top:8px}
-.fila:not(.ancha) figure .peza{flex:none;height:calc(34 * var(--cela-ico));min-height:0}
-.fila:not(.ancha) figure .peza>.fondo{height:100%}
+.fila:not(.ancha):not(.catro) figure .peza{flex:none;height:calc(34 * var(--cela-ico));min-height:0}
+.fila:not(.ancha):not(.catro) figure .peza>.fondo{height:100%}
+.fila.catro figure .peza{flex:1;height:auto}
 .fila.ancha figure figcaption{min-height:60px} @media (max-width:479px){.fila.ancha figure figcaption{min-height:0}}
 .fila.estreita .fondo{padding:calc(3 * var(--cela-ico))}
 .fila.pictos{grid-template-columns:repeat(auto-fill,minmax(min(100%,9rem),1fr));--cela-ico:5px}
