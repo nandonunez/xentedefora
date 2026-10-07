@@ -1,5 +1,6 @@
-# Manual de identidade visual · Xente de Fóra
+# Xente de Fóra
 
-Sitio estático xerado por `imaxe/_xerar_guia.py` do repositorio de traballo da asociación. Non editar a man: rexérase enteiro en cada execución.
+Sitio estático da Asociación Xente de Fóra. Non editar aquí: cópiase do repositorio de traballo da asociación.
 
-Contido: `index.html` (todo o manual), `fonte/` (WOFF2 e licenzas OFL), `img/` (fotos recortadas, PNG, GIF).
+- Raíz: a web da asociación.
+- `identidade/`: a proposta de identidade visual, co manual (`identidade/manual/`), o editor de píxel e o simulador do feed.

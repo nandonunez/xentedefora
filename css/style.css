@@ -1,0 +1,882 @@
+/* Asociación Xente de Fóra: folla de estilos da web.
+   Tres cores e ningunha máis. O píxel vai sempre a un número enteiro de
+   píxeles por cela. Sen radios, sombras, degradados nin transicións.
+   As regras están en web/AGENTS.md e no manual de identidade. */
+
+/* 1. Fontes */
+
+@font-face {
+  font-family: "Puntos";
+  src: url("../fonts/Puntos-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../fonts/PlusJakartaSans.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../fonts/PlusJakartaSans-Italic.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/IBMPlexMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/IBMPlexMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. Valores */
+
+:root {
+  --papel: #F5F3EC;
+  --tinta: #1A1A1A;
+  --magenta: #E4007C;
+
+  --texto: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --datos: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --puntos: "Puntos", monospace;
+
+  /* A cela do píxel. Só valores enteiros. */
+  --cela: 4px;
+  --marxe: 16px;
+
+  /* Fondo e cor de texto do contexto. Cada masa cámbiaos. */
+  --fondo: var(--papel);
+  --cor: var(--tinta);
+
+  color-scheme: light;
+}
+
+@media (min-width: 640px) {
+  :root { --cela: 6px; --marxe: 24px; }
+}
+
+@media (min-width: 1024px) {
+  :root { --cela: 8px; --marxe: 32px; }
+}
+
+/* 3. Base */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--papel);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--fondo);
+  color: var(--cor);
+  font: 400 1.0625rem/1.75rem var(--texto);
+}
+
+main { flex: 1; }
+
+img, svg { display: block; max-width: 100%; }
+
+/* Puntos: só en titulares, en caixa alta e a múltiplos de 8 px. */
+h1, h2, .puntos {
+  margin: 0;
+  font-family: var(--puntos);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-wrap: balance;
+  font-kerning: none;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: none;
+}
+
+h1 { font-size: 32px; }
+
+h2 {
+  margin-bottom: 16px;
+  font-size: 24px;
+}
+
+h3 {
+  margin: 0;
+  font: 700 1.25rem/1.75rem var(--texto);
+}
+
+@media (min-width: 640px) {
+  h1 { font-size: 48px; }
+  h2 { font-size: 32px; }
+}
+
+@media (min-width: 1152px) {
+  h1 { font-size: 64px; }
+}
+
+p, ul, ol, dl { margin: 0 0 1rem; }
+p, li { max-width: 64ch; }
+strong { font-weight: 700; }
+
+/* Subtítulo en letra de texto, para os títulos longos. */
+.subtitulo {
+  font: 700 1.5rem/2rem var(--texto);
+  text-transform: none;
+  text-rendering: auto;
+  font-kerning: auto;
+  -webkit-font-smoothing: auto;
+}
+
+.entradilla {
+  max-width: 34em;
+  font: 500 1.25rem/1.875rem var(--texto);
+}
+
+/* Datos: unha liña, en caixa alta, co punto medio de separador. */
+.datos { font: 400 0.875rem/1.25rem var(--datos); }
+
+.etiqueta {
+  margin: 0 0 8px;
+  font: 700 0.875rem/1.25rem var(--datos);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.selo {
+  display: inline-block;
+  margin: 0;
+  padding: 4px 8px;
+  background: var(--cor);
+  color: var(--fondo);
+  font: 700 0.875rem/1.25rem var(--datos);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 4. Ligazóns, foco e botóns. Os estados cambian dun golpe. */
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--magenta);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+a:hover {
+  background: var(--cor);
+  color: var(--fondo);
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cor);
+  outline-offset: 2px;
+}
+
+.salto {
+  position: absolute;
+  top: 8px;
+  left: var(--marxe);
+  z-index: 10;
+  padding: 8px 12px;
+  background: var(--tinta);
+  color: var(--papel);
+  font: 700 0.875rem/1.25rem var(--datos);
+  text-decoration: none;
+}
+
+.salto:not(:focus) {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.boton {
+  display: inline-block;
+  padding: 16px 24px;
+  background: var(--magenta);
+  color: var(--papel);
+  font: 400 24px/32px var(--puntos);
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-kerning: none;
+  -webkit-font-smoothing: none;
+}
+
+.boton:hover {
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+/* 5. Píxel */
+
+/* Unha peza de --w por --h celas, á cela do contexto. */
+.px {
+  flex: none;
+  width: calc(var(--w) * var(--cela));
+  height: calc(var(--h) * var(--cela));
+  max-width: none;
+  image-rendering: pixelated;
+}
+
+.peza-pandeireteira { --w: 24; --h: 31; }
+.peza-bailadora { --w: 20; --h: 32; }
+.peza-numero { --w: 11; --h: 11; }
+.peza-foliada { --w: 31; --h: 20; }
+
+/* Masa de cor. Sobre o magenta só vai texto grande. */
+.masa {
+  --fondo: var(--magenta);
+  --cor: var(--papel);
+  position: relative;
+  z-index: 1;
+  background: var(--fondo);
+  color: var(--cor);
+}
+
+.masa-tinta { --fondo: var(--tinta); }
+
+.masa a { text-decoration-color: currentColor; }
+
+.masa .boton {
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.masa-tinta .boton { background: var(--magenta); }
+
+.masa .boton:hover {
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+/* Bordo bordado: tres filas de tramado entre a masa e o papel. */
+.bordo-arriba::before,
+.bordo-abaixo::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: calc(3 * var(--cela));
+  background: var(--fondo);
+  pointer-events: none;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+  -webkit-mask-size: calc(4 * var(--cela)) calc(3 * var(--cela));
+  mask-size: calc(4 * var(--cela)) calc(3 * var(--cela));
+}
+
+.bordo-arriba::before {
+  bottom: calc(100% - 1px);
+  -webkit-mask-image: url("../img/bordo_arriba.svg");
+  mask-image: url("../img/bordo_arriba.svg");
+}
+
+.bordo-abaixo::after {
+  top: calc(100% - 1px);
+  -webkit-mask-image: url("../img/bordo_abaixo.svg");
+  mask-image: url("../img/bordo_abaixo.svg");
+}
+
+/* Filete: dous compases de muiñeira, a 4 px por cela. */
+.filete {
+  height: 12px;
+  background: url("../img/elementos/ritmo_muineira.svg") 0 0 / 144px 12px repeat-x;
+}
+
+/* 6. Estrutura */
+
+.contedor {
+  width: 100%;
+  max-width: calc(1120px + 2 * var(--marxe));
+  margin-inline: auto;
+  padding-inline: var(--marxe);
+}
+
+.seccion { padding-block: 64px; }
+
+.dous {
+  display: grid;
+  gap: 48px;
+}
+
+@media (min-width: 640px) {
+  .seccion { padding-block: 96px; }
+}
+
+@media (min-width: 900px) {
+  .dous {
+    grid-template-columns: 1fr 1fr;
+    gap: 96px;
+    align-items: start;
+  }
+}
+
+/* 7. Cabeceira e rodapé */
+
+.cabeceira-interior {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "marca accion"
+    "seccions seccions";
+  align-items: center;
+  gap: 4px 16px;
+  padding-block: 12px 4px;
+}
+
+.marca {
+  grid-area: marca;
+  justify-self: start;
+}
+
+.marca:hover { background: none; }
+
+.marca img {
+  width: 114px;
+  height: 40px;
+}
+
+.nav-seccions {
+  grid-area: seccions;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  margin: 0 -8px;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-seccions a,
+.nav-accion {
+  display: block;
+  font: 700 0.875rem/1.25rem var(--datos);
+  text-decoration: none;
+}
+
+.nav-seccions a { padding: 12px 8px; }
+
+.nav-seccions a[aria-current] {
+  text-decoration: underline;
+  text-decoration-color: var(--magenta);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.nav-seccions a[aria-current]:hover { text-decoration: none; }
+
+.nav-accion {
+  grid-area: accion;
+  padding: 10px 16px;
+  border: 2px solid var(--tinta);
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.nav-accion:hover,
+.nav-accion[aria-current] {
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+@media (min-width: 768px) {
+  .cabeceira-interior {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "marca seccions accion";
+    gap: 24px;
+    padding-block: 16px;
+  }
+
+  .nav-seccions {
+    justify-content: flex-end;
+    gap: 0 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .marca img {
+    width: 171px;
+    height: 60px;
+  }
+}
+
+.rodape-interior {
+  display: grid;
+  gap: 32px;
+  padding-block: 48px 64px;
+}
+
+.rodape p, .rodape li { max-width: none; }
+
+.rodape-nome {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.rodape ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rodape li a {
+  display: inline-block;
+  padding: 6px 0;
+}
+
+@media (min-width: 768px) {
+  .rodape-interior {
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 48px;
+  }
+}
+
+/* 8. Bloques */
+
+/* Cabeza de páxina: unha banda co título e, se hai, a peza de pé no bordo. */
+.cabeza-interior {
+  display: grid;
+  gap: 32px;
+  align-items: end;
+  padding-top: 48px;
+}
+
+.cabeza-texto { padding-bottom: 48px; }
+
+.cabeza-texto:not(:last-child) { padding-bottom: 0; }
+
+.figuras {
+  display: flex;
+  align-items: flex-end;
+  gap: calc(2 * var(--cela));
+}
+
+@media (min-width: 768px) {
+  .cabeza-interior {
+    grid-template-columns: 1fr auto;
+    gap: 48px;
+    padding-top: 96px;
+  }
+
+  .cabeza-texto,
+  .cabeza-texto:not(:last-child) { padding-bottom: 64px; }
+}
+
+/* Cabeza en papel, para as páxinas en rexistro oficial. */
+.cabeza-papel { padding-top: 64px; }
+
+@media (min-width: 640px) {
+  .cabeza-papel { padding-top: 96px; }
+}
+
+.prosa { max-width: 44rem; }
+
+.prosa > h1 { margin-bottom: 24px; }
+
+.prosa > h2 { margin: 64px 0 16px; }
+
+.selo + .entradilla { margin-top: 16px; }
+
+.prosa > h3 { margin: 32px 0 8px; }
+
+.prosa > .boton { margin-top: 16px; }
+
+/* Segundo bloque dentro dunha sección. */
+.bloque { margin-top: 64px; }
+
+.bloque > h2 { margin-bottom: 16px; }
+
+.nota { margin-top: 16px; }
+
+.lista { padding-left: 1.25rem; }
+
+.lista li { margin-bottom: 8px; }
+
+.prosa li { margin-bottom: 8px; }
+
+.prosa > ul,
+.prosa > ol { padding-left: 1.25rem; }
+
+.entradilla + .boton { margin-top: 16px; }
+
+/* Lista de datos: a etiqueta en mono, o valor en texto. */
+.lista-datos { margin: 0 0 1rem; }
+
+.lista-datos > div {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--cor);
+}
+
+.lista-datos > div:last-child { border-bottom: 1px solid var(--cor); }
+
+.lista-datos dt {
+  font: 700 0.875rem/1.75rem var(--datos);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lista-datos dd { margin: 0; }
+
+@media (max-width: 479px) {
+  .lista-datos > div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+.taboa {
+  width: 100%;
+  margin: 24px 0;
+  border-collapse: collapse;
+}
+
+.taboa th,
+.taboa td {
+  padding: 12px 24px 12px 0;
+  border-top: 1px solid var(--tinta);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: top;
+}
+
+.taboa tr:last-child > * { border-bottom: 1px solid var(--tinta); }
+
+.taboa thead th {
+  font: 700 0.875rem/1.25rem var(--datos);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 639px) {
+  .taboa thead { display: none; }
+
+  .taboa td {
+    display: block;
+    padding-right: 0;
+  }
+
+  .taboa td + td {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .taboa tr:last-child > td:first-child { border-bottom: 0; }
+}
+
+/* Pasos numerados coa cifra en píxel. */
+.pasos {
+  --cela: 4px;
+  margin: 24px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pasos li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  border-top: 1px solid var(--tinta);
+}
+
+.pasos li:last-child { border-bottom: 1px solid var(--tinta); }
+
+.pasos p { margin: 0; }
+
+.trazos {
+  display: grid;
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trazos li { max-width: none; }
+
+.trazos p { margin: 8px 0 0; }
+
+@media (min-width: 640px) {
+  .trazos {
+    grid-template-columns: 1fr 1fr;
+    gap: 48px 64px;
+  }
+}
+
+/* 9. Portada */
+
+.hero-interior {
+  display: grid;
+  gap: 48px;
+  padding-top: 48px;
+}
+
+.hero-lema {
+  max-width: 24em;
+  margin: 24px 0 32px;
+  font: 500 1.5rem/2rem var(--texto);
+}
+
+.hero .figuras { gap: calc(4 * var(--cela)); }
+
+@media (min-width: 900px) {
+  .hero-interior {
+    grid-template-columns: 1fr auto;
+    gap: 64px;
+    align-items: end;
+    padding-top: 96px;
+  }
+
+  .hero-texto { padding-bottom: 96px; }
+}
+
+.fichas {
+  display: grid;
+  gap: 48px 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha {
+  position: relative;
+  max-width: none;
+}
+
+.ficha-masa {
+  --cela: 4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: calc(2 * var(--cela));
+  height: calc(40 * var(--cela));
+  margin-bottom: 24px;
+}
+
+.ficha-marco { border: 1px solid var(--tinta); }
+
+.ficha-icona {
+  align-self: center;
+  width: calc(24 * var(--cela));
+  height: calc(24 * var(--cela));
+}
+
+.ficha-titulo {
+  margin-bottom: 8px;
+  font-size: 24px;
+}
+
+/* Toda a ficha leva á páxina. */
+.ficha-titulo a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.ficha:hover .ficha-titulo a {
+  background: var(--tinta);
+  color: var(--papel);
+  text-decoration: none;
+}
+
+.ficha p { margin: 0; }
+
+.ficha .selo { margin-top: 16px; }
+
+@media (min-width: 768px) {
+  .fichas { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .ficha-masa { --cela: 6px; }
+}
+
+.socia-interior {
+  display: grid;
+  gap: 48px;
+  padding-block: 72px;
+}
+
+.socia-texto p { margin: 16px 0 32px; }
+
+.cifra {
+  margin: 0 0 16px;
+  font: 400 64px/80px var(--puntos);
+  font-kerning: none;
+  -webkit-font-smoothing: none;
+}
+
+@media (min-width: 640px) {
+  .cifra {
+    font-size: 128px;
+    line-height: 160px;
+  }
+}
+
+@media (min-width: 900px) {
+  .socia-interior {
+    grid-template-columns: 1fr 1fr;
+    gap: 96px;
+    align-items: center;
+    padding-block: 96px;
+  }
+}
+
+.asociacion h2 { margin-bottom: 24px; }
+
+.foliadas { padding-top: 0; }
+
+.foliadas .dous { align-items: center; }
+
+/* 10. María Raxeta */
+
+.raxeta-interior {
+  display: grid;
+  gap: 48px;
+  padding-block: 48px 64px;
+}
+
+.raxeta-texto .etiqueta { margin-bottom: 16px; }
+
+.raxeta-texto .hero-lema { margin-bottom: 16px; }
+
+.raxeta-accions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  align-items: center;
+  margin-top: 32px;
+}
+
+/* O logo do grupo vai nunha placa lisa. O leopardo é o forro do bloque. */
+.raxeta-arte {
+  --u: 5px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(64 * var(--u));
+  height: calc(64 * var(--u));
+  background: var(--magenta);
+  color: var(--tinta);
+}
+
+.leopardo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.raxeta-placa {
+  position: relative;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  background: var(--papel);
+}
+
+.raxeta-placa img {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 359px) {
+  .raxeta-arte { --u: 4px; }
+}
+
+@media (min-width: 640px) {
+  .raxeta-arte { --u: 6px; }
+}
+
+@media (min-width: 1024px) {
+  .raxeta-arte { --u: 8px; }
+
+  .raxeta-interior {
+    grid-template-columns: 1fr auto;
+    gap: 64px;
+    align-items: center;
+    padding-block: 96px;
+  }
+}
+
+/* As rosetas aparecen unha a unha, a cadro enteiro. */
+@media (prefers-reduced-motion: no-preference) {
+  .leopardo use {
+    animation: aparecer 1ms steps(1, end) both;
+    animation-delay: calc(var(--i) * 50ms);
+  }
+}
+
+@keyframes aparecer {
+  from { visibility: hidden; }
+  to { visibility: visible; }
+}
+
+/* 11. «a eito!» */
+
+.aeito-icona {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .aeito-icona {
+    width: 144px;
+    height: 144px;
+  }
+}
+
+/* 12. Impresión */
+
+@media print {
+  .cabeceira nav > :not(.marca),
+  .filete,
+  .salto { display: none; }
+
+  .masa {
+    --fondo: var(--papel);
+    --cor: var(--tinta);
+  }
+
+  .bordo-arriba::before,
+  .bordo-abaixo::after { display: none; }
+}
