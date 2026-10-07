@@ -786,7 +786,7 @@ a:hover {
   margin-top: 32px;
 }
 
-/* O logo do grupo vai nunha placa lisa. O leopardo é o forro do bloque. */
+/* O símbolo do grupo vai no centro liso do bloque. O leopardo queda arredor. */
 .raxeta-arte {
   --u: 5px;
   position: relative;
@@ -806,23 +806,15 @@ a:hover {
   fill: currentColor;
 }
 
-.raxeta-placa {
+.raxeta-simbolo {
   position: relative;
-  width: calc(44 * var(--u));
-  height: calc(38 * var(--u));
-  padding: calc(2 * var(--u));
-  background: var(--papel);
-}
-
-.raxeta-placa img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  width: calc(40 * var(--u));
+  height: auto;
 }
 
 /* O nome do grupo vai coa súa propia letra, non en Puntos. */
 .raxeta-letras {
-  width: min(100%, 520px);
+  width: min(100%, 340px);
   height: auto;
 }
 
