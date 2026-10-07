@@ -793,7 +793,7 @@ a:hover {
   display: grid;
   place-items: center;
   width: calc(64 * var(--u));
-  height: calc(64 * var(--u));
+  height: calc(60 * var(--u));
   background: var(--magenta);
   color: var(--tinta);
 }
@@ -808,14 +808,22 @@ a:hover {
 
 .raxeta-placa {
   position: relative;
-  width: calc(40 * var(--u));
-  height: calc(40 * var(--u));
+  width: calc(44 * var(--u));
+  height: calc(38 * var(--u));
+  padding: calc(2 * var(--u));
   background: var(--papel);
 }
 
 .raxeta-placa img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
+}
+
+/* O nome do grupo vai coa súa propia letra, non en Puntos. */
+.raxeta-letras {
+  width: min(100%, 520px);
+  height: auto;
 }
 
 @media (max-width: 359px) {
