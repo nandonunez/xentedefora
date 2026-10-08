@@ -722,7 +722,10 @@ a:hover {
 .ficha .selo { margin-top: 16px; }
 
 @media (min-width: 768px) {
-  .fichas { grid-template-columns: repeat(3, 1fr); }
+  .fichas {
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
 }
 
 @media (min-width: 1024px) {
