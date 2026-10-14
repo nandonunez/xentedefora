@@ -257,7 +257,8 @@ a:hover {
 .peza-bailadora { --w: 20; --h: 32; }
 .peza-numero { --w: 11; --h: 11; }
 .peza-foliada { --w: 31; --h: 20; }
-.peza-bailador-grande { --w: 18; --h: 32; }
+.peza-bailadora-moderna { --w: 22; --h: 32; }
+.peza-bailador-moderno-grande { --w: 18; --h: 30; }
 
 /* Masa de cor. Sobre o magenta só vai texto grande. */
 .masa {
